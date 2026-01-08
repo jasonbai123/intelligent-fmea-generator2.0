@@ -1,0 +1,5 @@
+{
+  "name": "Intelligent FMEA Generator",
+  "description": "An AI-powered engineering tool that generates DFMEA and PFMEA structural analyses from BOMs, assembly drawings, or process flowcharts.",
+  "requestFramePermissions": []
+}
