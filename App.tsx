@@ -26,8 +26,12 @@ import { Guestbook } from './components/Guestbook';
 import AccountExpirationAlert from './components/AccountExpirationAlert';
 import UserManagement from './components/UserManagement';
 import Login from './components/Login';
+import ProjectList from './components/ProjectList';
+import ProjectDetail from './components/ProjectDetail';
+import VersionManagement from './components/VersionManagement';
+import CommentManagement from './components/CommentManagement';
 
-type ViewState = 'GENERATOR' | 'DFMEA_CRITERIA' | 'PFMEA_CRITERIA' | 'AI_SETTINGS' | 'GUESTBOOK' | 'USER_MANAGEMENT';
+type ViewState = 'GENERATOR' | 'DFMEA_CRITERIA' | 'PFMEA_CRITERIA' | 'AI_SETTINGS' | 'GUESTBOOK' | 'USER_MANAGEMENT' | 'COLLABORATION';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewState>('GENERATOR');
@@ -49,6 +53,10 @@ const App: React.FC = () => {
   // Auth State
   const [authToken, setAuthToken] = useState<AuthToken | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(false);
+
+  // Collaboration State
+  const [selectedProject, setSelectedProject] = useState<any>(null);
+  const [activeCollabTab, setActiveCollabTab] = useState<'detail' | 'versions' | 'comments'>('detail');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const excelInputRef = useRef<HTMLInputElement>(null);
@@ -313,10 +321,116 @@ const App: React.FC = () => {
         return <Guestbook />;
       case 'USER_MANAGEMENT':
         return authToken ? <UserManagement authToken={authToken} /> : <div className="text-center py-12 text-slate-500">请先登录</div>;
+      case 'COLLABORATION':
+        return authToken ? renderCollaboration() : <div className="text-center py-12 text-slate-500">请先登录</div>;
       case 'GENERATOR':
       default:
         return renderGenerator();
     }
+  };
+
+  const renderCollaboration = () => {
+    if (!selectedProject) {
+      return (
+        <ProjectList
+          onSelectProject={setSelectedProject}
+          onCreateProject={() => {
+            const newProject = {
+              id: `project_${Date.now()}`,
+              title: '新项目',
+              type: FmeaType.DFMEA,
+              data: {
+                type: FmeaType.DFMEA,
+                projectName: '新项目',
+                projectDescription: '',
+                analysisDate: Date.now(),
+                rows: [],
+                criteria: {}
+              },
+              createdBy: authToken?.userInfo.id || '',
+              createdAt: Date.now(),
+              updatedAt: Date.now(),
+              status: 'draft',
+              collaborators: [],
+              currentVersion: 1
+            };
+            setSelectedProject(newProject);
+          }}
+        />
+      );
+    }
+
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-4 mb-6">
+          <button
+            onClick={() => setSelectedProject(null)}
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            返回项目列表
+          </button>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+          <div className="border-b border-gray-200">
+            <nav className="flex gap-4 px-6">
+              <button
+                onClick={() => setActiveCollabTab('detail')}
+                className={`py-4 px-2 border-b-2 font-medium transition-colors ${
+                  activeCollabTab === 'detail'
+                    ? 'border-blue-600 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                项目详情
+              </button>
+              <button
+                onClick={() => setActiveCollabTab('versions')}
+                className={`py-4 px-2 border-b-2 font-medium transition-colors ${
+                  activeCollabTab === 'versions'
+                    ? 'border-blue-600 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                版本管理
+              </button>
+              <button
+                onClick={() => setActiveCollabTab('comments')}
+                className={`py-4 px-2 border-b-2 font-medium transition-colors ${
+                  activeCollabTab === 'comments'
+                    ? 'border-blue-600 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                评论
+              </button>
+            </nav>
+          </div>
+
+          <div className="p-6">
+            {activeCollabTab === 'detail' && (
+              <ProjectDetail
+                project={selectedProject}
+                onBack={() => setSelectedProject(null)}
+                onUpdate={setSelectedProject}
+              />
+            )}
+            {activeCollabTab === 'versions' && (
+              <VersionManagement
+                projectId={selectedProject.id}
+                currentVersion={selectedProject.currentVersion}
+                onVersionRestore={(version) => {
+                  alert(`已恢复到版本 ${version}`);
+                }}
+              />
+            )}
+            {activeCollabTab === 'comments' && (
+              <CommentManagement projectId={selectedProject.id} />
+            )}
+          </div>
+        </div>
+      </div>
+    );
   };
 
   const renderGenerator = () => (
@@ -580,6 +694,22 @@ const App: React.FC = () => {
             <div className="text-left">
               <div className="font-semibold">AI API 设置</div>
               <div className="text-xs opacity-70">配置服务商与 Key</div>
+            </div>
+          </button>
+
+          {/* Collaboration Tab */}
+          <button
+            onClick={() => handleNavClick('COLLABORATION')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+              currentView === 'COLLABORATION'
+                ? 'bg-teal-600 text-white shadow-lg shadow-teal-900/50' 
+                : 'hover:bg-slate-800'
+            }`}
+          >
+            <Users size={20} />
+            <div className="text-left">
+              <div className="font-semibold">项目协作</div>
+              <div className="text-xs opacity-70">团队协作与版本管理</div>
             </div>
           </button>
 

@@ -115,3 +115,73 @@ export interface AuthToken {
   userInfo: UserInfo;
   expiresAt: number;
 }
+
+export enum ProjectStatus {
+  DRAFT = 'draft',
+  IN_PROGRESS = 'in_progress',
+  REVIEW = 'review',
+  APPROVED = 'approved',
+  ARCHIVED = 'archived'
+}
+
+export interface FmeaProject {
+  id: string;
+  title: string;
+  type: FmeaType;
+  data: FmeaAnalysisResult;
+  createdBy: string;
+  createdAt: number;
+  updatedAt: number;
+  status: ProjectStatus;
+  collaborators: string[];
+  currentVersion: number;
+  description?: string;
+}
+
+export interface ProjectVersion {
+  id: string;
+  projectId: string;
+  version: number;
+  data: FmeaAnalysisResult;
+  createdBy: string;
+  createdAt: number;
+  comment: string;
+}
+
+export enum CommentType {
+  GENERAL = 'general',
+  ROW = 'row',
+  CELL = 'cell'
+}
+
+export interface CommentReply {
+  id: string;
+  commentId: string;
+  author: string;
+  authorName: string;
+  content: string;
+  createdAt: number;
+}
+
+export interface Comment {
+  id: string;
+  projectId: string;
+  type: CommentType;
+  author: string;
+  authorName: string;
+  content: string;
+  resolved: boolean;
+  createdAt: number;
+  updatedAt: number;
+  replies: CommentReply[];
+}
+
+export interface CollaborationActivity {
+  id: string;
+  projectId: string;
+  userId: string;
+  userName: string;
+  action: string;
+  details: string;
+  timestamp: number;
+}
