@@ -5,7 +5,7 @@ import authRoutes from './routes/auth';
 import collaborationRoutes from './routes/collaboration';
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = Number(process.env.PORT) || 3001;
 
 // 配置CORS
 app.use(cors({
@@ -70,8 +70,9 @@ app.get('/api/health', (req, res) => {
 });
 
 // 启动服务器
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`服务器运行在 http://localhost:${PORT}`);
+  console.log(`服务器运行在 http://0.0.0.0:${PORT}`);
   console.log('API 端点:');
   console.log('  - 健康检查: http://localhost:3001/api/health');
   console.log('  - 认证相关:');
