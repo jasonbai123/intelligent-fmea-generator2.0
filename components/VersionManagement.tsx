@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { GitBranch, Plus, RotateCcw, Clock, User } from 'lucide-react';
 import { ProjectVersion } from '../types';
+import { API_ENDPOINTS } from '../config/api';
 
 interface VersionManagementProps {
   projectId: string;
@@ -27,7 +28,7 @@ export default function VersionManagement({ projectId, currentVersion, onVersion
       }
 
       const { token, userInfo } = JSON.parse(authData);
-      const response = await fetch(`http://localhost:3001/api/collaboration/projects/${projectId}/versions`, {
+      const response = await fetch(API_ENDPOINTS.collaboration.versions(projectId), {
         headers: {
           'Content-Type': 'application/json',
           'userId': userInfo.id,
@@ -62,7 +63,7 @@ export default function VersionManagement({ projectId, currentVersion, onVersion
       }
 
       const { token, userInfo } = JSON.parse(authData);
-      const response = await fetch(`http://localhost:3001/api/collaboration/projects/${projectId}/versions`, {
+      const response = await fetch(API_ENDPOINTS.collaboration.versions(projectId), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -98,7 +99,7 @@ export default function VersionManagement({ projectId, currentVersion, onVersion
       }
 
       const { token, userInfo } = JSON.parse(authData);
-      const response = await fetch(`http://localhost:3001/api/collaboration/projects/${projectId}/versions/${version}/restore`, {
+      const response = await fetch(API_ENDPOINTS.collaboration.restoreVersion(projectId, version.toString()), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

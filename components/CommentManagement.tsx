@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MessageSquare, Send, Reply, CheckCircle, XCircle, Trash2, Edit2 } from 'lucide-react';
 import { Comment, CommentType } from '../types';
+import { API_ENDPOINTS } from '../config/api';
 
 interface CommentManagementProps {
   projectId: string;
@@ -29,7 +30,7 @@ export default function CommentManagement({ projectId }: CommentManagementProps)
       }
 
       const { token, userInfo } = JSON.parse(authData);
-      const response = await fetch(`http://localhost:3001/api/collaboration/projects/${projectId}/comments`, {
+      const response = await fetch(API_ENDPOINTS.collaboration.comments(projectId), {
         headers: {
           'Content-Type': 'application/json',
           'userId': userInfo.id,
@@ -63,7 +64,7 @@ export default function CommentManagement({ projectId }: CommentManagementProps)
       }
 
       const { token, userInfo } = JSON.parse(authData);
-      const response = await fetch(`http://localhost:3001/api/collaboration/projects/${projectId}/comments`, {
+      const response = await fetch(API_ENDPOINTS.collaboration.comments(projectId), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -102,7 +103,7 @@ export default function CommentManagement({ projectId }: CommentManagementProps)
       }
 
       const { token, userInfo } = JSON.parse(authData);
-      const response = await fetch(`http://localhost:3001/api/collaboration/projects/${projectId}/comments/${commentId}/replies`, {
+      const response = await fetch(API_ENDPOINTS.collaboration.replies(projectId, commentId), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -132,7 +133,7 @@ export default function CommentManagement({ projectId }: CommentManagementProps)
       }
 
       const { token, userInfo } = JSON.parse(authData);
-      const response = await fetch(`http://localhost:3001/api/collaboration/projects/${projectId}/comments/${comment.id}`, {
+      const response = await fetch(API_ENDPOINTS.collaboration.comment(projectId, comment.id), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -164,7 +165,7 @@ export default function CommentManagement({ projectId }: CommentManagementProps)
       }
 
       const { token, userInfo } = JSON.parse(authData);
-      const response = await fetch(`http://localhost:3001/api/collaboration/projects/${projectId}/comments/${commentId}`, {
+      const response = await fetch(API_ENDPOINTS.collaboration.comment(projectId, commentId), {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -196,7 +197,7 @@ export default function CommentManagement({ projectId }: CommentManagementProps)
       }
 
       const { token, userInfo } = JSON.parse(authData);
-      const response = await fetch(`http://localhost:3001/api/collaboration/projects/${projectId}/comments/${commentId}`, {
+      const response = await fetch(API_ENDPOINTS.collaboration.comment(projectId, commentId), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

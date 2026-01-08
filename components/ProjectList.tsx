@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Folder, Calendar, Users, MoreVertical, Trash2, Edit } from 'lucide-react';
 import { FmeaProject, FmeaType, ProjectStatus } from '../types';
+import { API_ENDPOINTS } from '../config/api';
 
 interface ProjectListProps {
   onSelectProject: (project: FmeaProject) => void;
@@ -26,7 +27,7 @@ export default function ProjectList({ onSelectProject, onCreateProject }: Projec
       }
 
       const { token, userInfo } = JSON.parse(authData);
-      const response = await fetch('http://localhost:3001/api/collaboration/projects', {
+      const response = await fetch(API_ENDPOINTS.collaboration.projects, {
         headers: {
           'Content-Type': 'application/json',
           'userId': userInfo.id,
@@ -61,7 +62,7 @@ export default function ProjectList({ onSelectProject, onCreateProject }: Projec
       }
 
       const { token, userInfo } = JSON.parse(authData);
-      const response = await fetch(`http://localhost:3001/api/collaboration/projects/${projectId}`, {
+      const response = await fetch(API_ENDPOINTS.collaboration.project(projectId), {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

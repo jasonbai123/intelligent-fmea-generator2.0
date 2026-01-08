@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Users, Calendar, Shield, User, Trash2, Save, RefreshCw } from 'lucide-react';
 import { UserInfo, UserRole, AuthToken } from '../types';
+import { API_ENDPOINTS } from '../config/api';
 
 interface UserManagementProps {
   authToken: AuthToken;
@@ -25,7 +26,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ authToken }) => {
   const loadUsers = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:3001/api/auth/users');
+      const response = await fetch(API_ENDPOINTS.auth.users);
       if (response.ok) {
         const parsedUsers: UserInfo[] = await response.json();
         const usersWithDays = parsedUsers.map(user => ({

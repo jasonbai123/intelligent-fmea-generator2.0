@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { FmeaType, FmeaAnalysisResult, AiSettings, DEFAULT_AI_SETTINGS, ChatMessage, ChatRole, AuthToken, UserRole } from './types';
 import { generateFmeaAnalysis, updateFmeaViaChat } from './services/geminiService';
+import { API_ENDPOINTS } from './config/api';
 import { FmeaTable } from './components/FmeaTable';
 import { DfmeaCriteria } from './components/DfmeaCriteria';
 import { PfmeaCriteria } from './components/PfmeaCriteria';
@@ -79,7 +80,7 @@ const App: React.FC = () => {
   }, []);
 
   const handleSendCode = async (phone: string) => {
-    const response = await fetch('http://localhost:3001/api/auth/send-code', {
+    const response = await fetch(API_ENDPOINTS.auth.sendCode, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -103,7 +104,7 @@ const App: React.FC = () => {
     setIsAuthLoading(true);
 
     try {
-      const response = await fetch('http://localhost:3001/api/auth/login', {
+      const response = await fetch(API_ENDPOINTS.auth.login, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Users, Calendar, Edit, Save, X, Plus, UserMinus } from 'lucide-react';
 import { FmeaProject, ProjectStatus } from '../types';
+import { API_ENDPOINTS } from '../config/api';
 
 interface ProjectDetailProps {
   project: FmeaProject;
@@ -27,7 +28,7 @@ export default function ProjectDetail({ project, onBack, onUpdate }: ProjectDeta
       }
 
       const { token, userInfo } = JSON.parse(authData);
-      const response = await fetch(`http://localhost:3001/api/collaboration/projects/${project.id}`, {
+      const response = await fetch(API_ENDPOINTS.collaboration.project(project.id), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -67,7 +68,7 @@ export default function ProjectDetail({ project, onBack, onUpdate }: ProjectDeta
       }
 
       const { token, userInfo } = JSON.parse(authData);
-      const response = await fetch(`http://localhost:3001/api/collaboration/projects/${project.id}/collaborators`, {
+      const response = await fetch(API_ENDPOINTS.collaboration.collaborators(project.id), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -101,7 +102,7 @@ export default function ProjectDetail({ project, onBack, onUpdate }: ProjectDeta
       }
 
       const { token, userInfo } = JSON.parse(authData);
-      const response = await fetch(`http://localhost:3001/api/collaboration/projects/${project.id}/collaborators/${collaboratorId}`, {
+      const response = await fetch(API_ENDPOINTS.collaboration.collaborator(project.id, collaboratorId), {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
