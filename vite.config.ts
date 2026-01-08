@@ -7,7 +7,18 @@ export default defineConfig(({ mode }) => {
     return {
       base: '/intelligent-fmea-generator2.0/',
       build: {
-        outDir: 'docs'
+        outDir: 'docs',
+        chunkSizeWarningLimit: 1000,
+        rollupOptions: {
+          output: {
+            manualChunks: {
+              react: ['react', 'react-dom'],
+              lucide: ['lucide-react'],
+              xlsx: ['xlsx', 'exceljs'],
+              google: ['@google/genai']
+            }
+          }
+        }
       },
       server: {
         port: 3000,
