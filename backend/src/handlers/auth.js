@@ -43,10 +43,6 @@ class AuthHandlers {
 
   // 发送验证码
   async handleSendCode(request) {
-    if (request.method === 'OPTIONS') {
-      return this.handleOptions();
-    }
-
     try {
       const body = await this.parseRequestBody(request);
       const { phone } = body;
@@ -84,10 +80,6 @@ class AuthHandlers {
 
   // 登录
   async handleLogin(request) {
-    if (request.method === 'OPTIONS') {
-      return this.handleOptions();
-    }
-
     try {
       const body = await this.parseRequestBody(request);
       const { phone, code } = body;
@@ -180,10 +172,6 @@ class AuthHandlers {
 
   // 获取用户列表
   async handleGetUsers(request) {
-    if (request.method === 'OPTIONS') {
-      return this.handleOptions();
-    }
-
     try {
       const users = await this.db.getAllUsers();
       return this.createResponse(users);
@@ -195,10 +183,6 @@ class AuthHandlers {
 
   // 更新用户过期时间
   async handleUpdateUserExpiration(request) {
-    if (request.method === 'OPTIONS') {
-      return this.handleOptions();
-    }
-
     try {
       // 从URL参数获取手机号
       const url = new URL(request.url);
@@ -245,10 +229,6 @@ class AuthHandlers {
 
   // 将试用账户转换为普通账户
   async handleConvertTrialToRegular(request) {
-    if (request.method === 'OPTIONS') {
-      return this.handleOptions();
-    }
-
     try {
       // 从URL参数获取手机号
       const url = new URL(request.url);
@@ -277,10 +257,6 @@ class AuthHandlers {
 
   // 删除用户
   async handleDeleteUser(request) {
-    if (request.method === 'OPTIONS') {
-      return this.handleOptions();
-    }
-
     try {
       // 从URL参数获取手机号
       const url = new URL(request.url);
