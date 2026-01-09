@@ -1,3 +1,10 @@
 [build]
 command = "npm run build"
+cwd = "."
 output_directory = "docs"
+
+[build.environment]
+NODE_VERSION = "22.16.0"
+
+[build.environment.variables]
+NODE_ENV = "production"

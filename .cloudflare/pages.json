@@ -1,0 +1,32 @@
+{
+  "build": {
+    "command": "npm run build",
+    "cwd": ".",
+    "root_dir": "."
+  },
+  "build_output": "docs",
+  "compatibility_flags": [],
+  "compatibility_date": "2024-12-01",
+  "env": {
+    "production": {
+      "vars": {
+        "NODE_ENV": "production"
+      }
+    }
+  },
+  "name": "intelligent-fmea-generator",
+  "pages_build_output_dir": "docs",
+  "placement": null,
+  "prerelease": false,
+  "production_branch": "main",
+  "routes": [],
+  "services": [],
+  "triggers": {
+    "crons": []
+  },
+  "usage_model": "",
+  "vars": {
+    "NODE_ENV": "production"
+  },
+  "version": 1
+}

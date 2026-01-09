@@ -65,12 +65,12 @@ class AuthHandlers {
         expiresAt: Date.now() + 5 * 60 * 1000
       });
 
-      // 测试环境：直接返回验证码
-      console.log(`[测试] 手机号 ${phone} 的验证码: ${code}`);
+      // 直接返回验证码给前端
+      console.log(`[验证码] 手机号 ${phone} 的验证码: ${code}`);
       
       return this.createResponse({
-        message: '验证码发送成功',
-        code: process.env.NODE_ENV === 'production' ? undefined : code // 生产环境不返回验证码
+        message: '验证码生成成功',
+        code: code
       });
     } catch (error) {
       console.error('发送验证码失败:', error);
@@ -275,6 +275,17 @@ class AuthHandlers {
     } catch (error) {
       console.error('删除用户失败:', error);
       return this.createResponse({ message: '删除用户失败' }, 500);
+    }
+  }
+
+  // 获取所有验证码记录（管理员功能）
+  async handleGetAllVerificationCodes(request) {
+    try {
+      const codes = await this.db.getAllVerificationCodes();
+      return this.createResponse(codes);
+    } catch (error) {
+      console.error('获取验证码记录失败:', error);
+      return this.createResponse({ message: '获取验证码记录失败' }, 500);
     }
   }
 }

@@ -68,16 +68,12 @@ export enum AiProvider {
 
 export interface AiSettings {
   provider: AiProvider;
-  apiKey: string;
   modelName: string;
-  baseUrl: string;
 }
 
 export const DEFAULT_AI_SETTINGS: AiSettings = {
   provider: AiProvider.GEMINI,
-  apiKey: '',
   modelName: 'gemini-2.0-flash',
-  baseUrl: '',
 };
 
 export enum ChatRole {

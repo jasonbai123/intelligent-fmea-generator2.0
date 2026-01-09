@@ -16,7 +16,7 @@ import {
   Users
 } from 'lucide-react';
 import { FmeaType, FmeaAnalysisResult, AiSettings, DEFAULT_AI_SETTINGS, ChatMessage, ChatRole, AuthToken, UserRole } from './types';
-import { generateFmeaAnalysis, updateFmeaViaChat } from './services/geminiService';
+import { generateFmeaAnalysis, updateFmeaViaChat } from './services/backendAiService';
 import { API_ENDPOINTS } from './config/api';
 import { FmeaTable } from './components/FmeaTable';
 import { DfmeaCriteria } from './components/DfmeaCriteria';
@@ -95,8 +95,8 @@ const App: React.FC = () => {
 
     const data = await response.json();
     if (data.code) {
-      console.log(`[测试] 验证码: ${data.code}`);
-      alert(`[测试环境] 验证码: ${data.code}`);
+      console.log(`[验证码] 手机号 ${phone} 的验证码: ${data.code}`);
+      alert(`验证码已生成：${data.code}\n\n请使用此验证码进行登录`);
     }
   };
 
@@ -321,9 +321,19 @@ const App: React.FC = () => {
       case 'GUESTBOOK':
         return <Guestbook />;
       case 'USER_MANAGEMENT':
-        return authToken ? <UserManagement authToken={authToken} /> : <div className="text-center py-12 text-slate-500">请先登录</div>;
+        // 暂时禁用，直接显示提示
+        return <div className="text-center py-12 text-slate-500">
+          <div className="mb-4">用户管理功能需要后端支持</div>
+          <div className="text-sm">当前为单机模式，可以直接使用FMEA生成功能</div>
+        </div>;
+        // return authToken ? <UserManagement authToken={authToken} /> : <div className="text-center py-12 text-slate-500">请先登录</div>;
       case 'COLLABORATION':
-        return authToken ? renderCollaboration() : <div className="text-center py-12 text-slate-500">请先登录</div>;
+        // 暂时禁用，直接显示提示
+        return <div className="text-center py-12 text-slate-500">
+          <div className="mb-4">协作功能需要后端支持</div>
+          <div className="text-sm">当前为单机模式，可以直接使用FMEA生成功能</div>
+        </div>;
+        // return authToken ? renderCollaboration() : <div className="text-center py-12 text-slate-500">请先登录</div>;
       case 'GENERATOR':
       default:
         return renderGenerator();
@@ -586,9 +596,10 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans overflow-x-hidden">
-      {!authToken ? (
+      {/* 暂时禁用登录要求，直接显示主应用 */}
+      {/* {!authToken ? (
         <Login onLogin={handleLogin} onSendCode={handleSendCode} isLoading={isAuthLoading} />
-      ) : (
+      ) : (*/}
         <div className="flex flex-col md:flex-row">
           {/* Sidebar / Navigation */}
           <aside className="w-full md:w-64 bg-slate-900 text-slate-300 flex flex-col shrink-0">
@@ -734,6 +745,7 @@ const App: React.FC = () => {
         </nav>
 
         <div className="p-6 space-y-2 text-xs text-slate-500 border-t border-slate-800">
+          {/* 暂时禁用用户信息显示
           <div className="flex items-center gap-2 mb-2">
             <div className="flex-1">
               <div className="font-medium text-slate-400">当前用户</div>
@@ -747,6 +759,7 @@ const App: React.FC = () => {
               退出登录
             </button>
           </div>
+          */}
           <div>Powered by {aiSettings.provider === 'gemini' ? 'Gemini' : aiSettings.provider.toUpperCase()}</div>
           <div>Standard: AIAG & VDA FMEA 1.0</div>
           <div className="pt-4 mt-2 border-t border-slate-800">
@@ -764,7 +777,7 @@ const App: React.FC = () => {
         </div>
       </main>
     </div>
-      )}
+      {/*)}*/}
     </div>
   );
 };

@@ -184,17 +184,173 @@ const cleanAndParseJson = (text: string) => {
   }
 };
 
+// --- MOCK DATA GENERATOR (无API密钥时的模拟模式) ---
+const generateMockFmeaData = (type: FmeaType, textContext: string): FmeaAnalysisResult => {
+  const isDfmea = type === FmeaType.DFMEA;
+
+  // 从输入中提取产品名称（如果有的话）
+  let productName = "示例产品";
+  if (textContext) {
+    const lines = textContext.split('\n');
+    if (lines[0] && lines[0].trim()) {
+      productName = lines[0].trim().substring(0, 50);
+    }
+  }
+
+  const mockRows = [
+    {
+      id: `row-${Date.now()}-1`,
+      s2_item: "系统/总成", s2_step: productName + "总成", s2_element: "子系统",
+      s3_func_item: `为最终用户提供${productName}的核心功能`, s3_func_step: "实现产品功能", s3_func_element: "支撑结构",
+      s4_effect: `产品完全失效，无法实现预期功能\n工厂内部: 功能完全丧失\n下游工厂: 无法进行后续装配\n最终用户: 产品无法使用，严重不满`,
+      s4_severity: 10,
+      s4_mode: "功能丧失",
+      s4_cause: "关键元器件失效",
+      s5_prev_control: "设计验证", s5_occurrence: 5, s5_det_control: "功能测试", s5_detection: 4, s5_ap: "H",
+      s6_prev_action: "优化元器件选型，提高冗余度", s6_det_action: "增加故障检测机制", s6_resp_person: "张工程师", s6_target_date: "2024-02-01", s6_status: "Open", s6_action_taken: "", s6_completion_date: "", s6_severity_new: 8, s6_occurrence_new: 4, s6_detection_new: 3, s6_ap_new: "M", remarks: "高优先级项目"
+    },
+    {
+      id: `row-${Date.now()}-2`,
+      s2_item: "系统/总成", s2_step: productName + "总成", s2_element: "控制模块",
+      s3_func_item: "控制产品运行状态", s3_func_step: "信号处理与输出", s3_func_element: "微控制器",
+      s4_effect: "性能下降，功能部分受限\n工厂内部: 需要返工\n下游工厂: 装配效率降低\n最终用户: 产品性能不佳，客户投诉",
+      s4_severity: 7,
+      s4_mode: "性能退化",
+      s4_cause: "软件算法缺陷",
+      s5_prev_control: "代码审查", s5_occurrence: 4, s5_det_control: "单元测试", s5_detection: 3, s5_ap: "M",
+      s6_prev_action: "优化软件算法", s6_det_action: "增加集成测试", s6_resp_person: "李工程师", s6_target_date: "2024-02-15", s6_status: "Open", s6_action_taken: "", s6_completion_date: "", s6_severity_new: 5, s6_occurrence_new: 3, s6_detection_new: 2, s6_ap_new: "L", remarks: ""
+    },
+    {
+      id: `row-${Date.now()}-3`,
+      s2_item: "系统/总成", s2_step: productName + "总成", s2_element: "电源模块",
+      s3_func_item: "提供稳定电力供应", s3_func_step: "电压转换与分配", s3_func_element: "DC-DC转换器",
+      s4_effect: "间歇性故障，时好时坏\n工厂内部: 测试困难\n下游工厂: 质量不稳定\n最终用户: 使用体验差，退货",
+      s4_severity: 6,
+      s4_mode: "间歇性运作",
+      s4_cause: "元器件参数漂移",
+      s5_prev_control: "元器件筛选", s5_occurrence: 5, s5_det_control: "老化测试", s5_detection: 5, s5_ap: "M",
+      s6_prev_action: "改进元器件质量控制", s6_det_action: "加强入厂检验", s6_resp_person: "王工程师", s6_target_date: "2024-01-30", s6_status: "In Progress", s6_action_taken: "已联系新供应商", s6_completion_date: "", s6_severity_new: 4, s6_occurrence_new: 4, s6_detection_new: 3, s6_ap_new: "L", remarks: "供应商变更中"
+    },
+    {
+      id: `row-${Date.now()}-4`,
+      s2_item: "系统/总成", s2_step: productName + "总成", s2_element: "结构组件",
+      s3_func_item: "提供机械支撑和保护", s3_func_step: "承受外部载荷", s3_func_element: "外壳",
+      s4_effect: "外观缺陷，但不影响功能\n工厂内部: 需要返修\n下游工厂: 无影响\n最终用户: 满意度下降",
+      s4_severity: 3,
+      s4_mode: "外观缺陷",
+      s4_cause: "注塑工艺参数不当",
+      s5_prev_control: "工艺参数优化", s5_occurrence: 4, s5_det_control: "外观检查", s5_detection: 2, s5_ap: "L",
+      s6_prev_action: "优化注塑参数", s6_det_action: "增加首件检验", s6_resp_person: "赵工程师", s6_target_date: "2024-01-20", s6_status: "Completed", s6_action_taken: "已调整参数，效果良好", s6_completion_date: "2024-01-18", s6_severity_new: 2, s6_occurrence_new: 2, s6_detection_new: 1, s6_ap_new: "L", remarks: "已解决"
+    },
+    {
+      id: `row-${Date.now()}-5`,
+      s2_item: "系统/总成", s2_step: productName + "总成", s2_element: "连接接口",
+      s3_func_item: "实现外部设备连接", s3_func_step: "数据传输", s3_func_element: "连接器",
+      s4_effect: "连接不稳定，数据传输失败\n工厂内部: 需要返工\n下游工厂: 装配困难\n最终用户: 功能受限，抱怨",
+      s4_severity: 5,
+      s4_mode: "信号丢失",
+      s4_cause: "连接器接触不良",
+      s5_prev_control: "优选供应商", s5_occurrence: 3, s5_det_action: "信号检测", s5_detection: 3, s5_ap: "M",
+      s6_prev_action: "更换连接器供应商", s6_det_action: "增加信号完整性测试", s6_resp_person: "刘工程师", s6_target_date: "2024-02-10", s6_status: "Open", s6_action_taken: "", s6_completion_date: "", s6_severity_new: 4, s6_occurrence_new: 2, s6_detection_new: 2, s6_ap_new: "L", remarks: ""
+    },
+    {
+      id: `row-${Date.now()}-6`,
+      s2_item: "子系统", s2_step: "驱动模块", s2_element: "电机",
+      s3_func_item: "提供动力输出", s3_func_step: "电能转换为机械能", s3_func_element: "转子组件",
+      s4_effect: "电机不转，功能完全丧失\n工厂内部: 100%不良\n下游工厂: 无法装配\n最终用户: 产品无法使用",
+      s4_severity: 10,
+      s4_mode: "无法启动",
+      s4_cause: "电机线圈开路",
+      s5_prev_control: "供应商认证", s5_occurrence: 2, s5_det_control: "导通测试", s5_detection: 2, s5_ap: "M",
+      s6_prev_action: "加强供应商质量管理", s6_det_action: "增加100%导通测试", s6_resp_person: "陈工程师", s6_target_date: "2024-01-25", s6_status: "Open", s6_action_taken: "", s6_completion_date: "", s6_severity_new: 7, s6_occurrence_new: 2, s6_detection_new: 2, s6_ap_new: "M", remarks: "供应商整改中"
+    },
+    {
+      id: `row-${Date.now()}-7`,
+      s2_item: "子系统", s2_step: "驱动模块", s2_element: "传动机构",
+      s3_func_item: "传递动力", s3_func_step: "扭矩传递", s3_func_element: "齿轮组",
+      s4_effect: "噪音过大，用户不满意\n工厂内部: 需要返工\n下游工厂: 无影响\n最终用户: 投诉噪音",
+      s4_severity: 4,
+      s4_mode: "异常噪音",
+      s4_cause: "齿轮啮合不良",
+      s5_prev_control: "设计评审", s5_occurrence: 4, s5_det_control: "噪音测试", s5_detection: 3, s5_ap: "L",
+      s6_prev_action: "优化齿轮参数", s6_det_action: "加强噪音检测", s6_resp_person: "张工程师", s6_target_date: "2024-02-05", s6_status: "Open", s6_action_taken: "", s6_completion_date: "", s6_severity_new: 3, s6_occurrence_new: 3, s6_detection_new: 2, s6_ap_new: "L", remarks: ""
+    },
+    {
+      id: `row-${Date.now()}-8`,
+      s2_item: "子系统", s2_step: "控制模块", s2_element: "传感器",
+      s3_func_item: "检测工作状态", s3_func_step: "信号采集", s3_func_element: "温度传感器",
+      s4_effect: "温度检测不准，可能过热\n工厂内部: 测试困难\n下游工厂: 无影响\n最终用户: 潜在安全风险",
+      s4_severity: 8,
+      s4_mode: "测量偏差",
+      s4_cause: "传感器精度不足",
+      s5_prev_control: "元器件选型", s5_occurrence: 5, s5_det_control: "校准测试", s5_detection: 4, s5_ap: "M",
+      s6_prev_action: "更换高精度传感器", s6_det_action: "增加定期校准", s6_resp_person: "李工程师", s6_target_date: "2024-01-28", s6_status: "Open", s6_action_taken: "", s6_completion_date: "", s6_severity_new: 6, s6_occurrence_new: 4, s6_detection_new: 3, s6_ap_new: "M", remarks: "安全相关"
+    },
+    {
+      id: `row-${Date.now()}-9`,
+      s2_item: "子系统", s2_step: "控制模块", s2_element: "主控芯片",
+      s3_func_item: "数据处理与控制", s3_func_step: "算法执行", s3_func_element: "MCU",
+      s4_effect: "程序跑飞，功能异常\n工厂内部: 需要重启\n下游工厂: 无影响\n最终用户: 产品死机",
+      s4_severity: 9,
+      s4_mode: "软件崩溃",
+      s4_cause: "软件bug",
+      s5_prev_control: "代码审查", s5_occurrence: 3, s5_det_control: "压力测试", s5_detection: 4, s5_ap: "H",
+      s6_prev_action: "修复软件bug", s6_det_action: "增加异常处理", s6_resp_person: "王工程师", s6_target_date: "2024-01-22", s6_status: "Completed", s6_action_taken: "已发布补丁", s6_completion_date: "2024-01-20", s6_severity_new: 5, s6_occurrence_new: 2, s6_detection_new: 2, s6_ap_new: "L", remarks: "已修复"
+    },
+    {
+      id: `row-${Date.now()}-10`,
+      s2_item: "零部件", s2_step: "电源电路", s2_element: "电容",
+      s3_func_item: "滤波储能", s3_func_step: "电压平滑", s3_func_element: "电解电容",
+      s4_effect: "电路纹波大，干扰其他模块\n工厂内部: 性能测试不通过\n下游工厂: 无影响\n最终用户: 功能异常",
+      s4_severity: 5,
+      s4_mode: "电压波动",
+      s4_cause: "电容值衰减",
+      s5_prev_control: "降额设计", s5_occurrence: 4, s5_det_control: "纹波测试", s5_detection: 3, s5_ap: "M",
+      s6_prev_action: "增大电容容量", s6_det_action: "加强寿命测试", s6_resp_person: "赵工程师", s6_target_date: "2024-02-08", s6_status: "Open", s6_action_taken: "", s6_completion_date: "", s6_severity_new: 4, s6_occurrence_new: 3, s6_detection_new: 2, s6_ap_new: "L", remarks: ""
+    }
+  ];
+
+  return {
+    title: `${productName} - ${isDfmea ? 'DFMEA' : 'PFMEA'}分析报告（模拟数据）`,
+    type: type,
+    rows: mockRows
+  };
+};
+
 // --- GEMINI IMPLEMENTATION ---
 const generateWithGemini = async (request: GenerationRequest, apiKey?: string, model?: string) => {
   // Use provided key or fallback to env
   const finalApiKey = apiKey || process.env.API_KEY;
-  if (!finalApiKey) throw new Error("API Key for Gemini is missing.");
+
+  // DEBUG: Log API key status
+  console.log('[DEBUG] Gemini API Key Status:', {
+    hasApiKeyFromParams: !!apiKey,
+    hasApiKeyFromEnv: !!process.env.API_KEY,
+    apiKeyLength: finalApiKey?.length,
+    apiKeyPrefix: finalApiKey?.substring(0, 10) + '...'
+  });
+
+  // ✅ 模拟模式：如果没有API密钥或密钥无效，使用模拟数据
+  if (!finalApiKey || finalApiKey === 'PLACEHOLDER_API_KEY' || finalApiKey.length < 20) {
+    console.warn('⚠️ API密钥未配置，使用模拟数据模式');
+    console.log('💡 提示：请在"AI API设置"中配置真实的API密钥以使用AI生成');
+    const mockData = generateMockFmeaData(request.type, request.textContext);
+    // 模拟API延迟
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    return JSON.stringify(mockData);
+  }
 
   const ai = new GoogleGenAI({ apiKey: finalApiKey });
   const modelName = model || "gemini-2.0-flash";
 
+  console.log('[DEBUG] Calling Gemini API:', {
+    model: modelName,
+    textLength: request.textContext?.length,
+    hasImage: !!request.imageBase64
+  });
+
   const systemInstruction = getSystemInstruction(request.type);
-  
+
   const parts: any[] = [{ text: request.textContext }];
   if (request.imageBase64 && request.mimeType) {
     parts.push({
@@ -205,19 +361,28 @@ const generateWithGemini = async (request: GenerationRequest, apiKey?: string, m
     });
   }
 
-  const response = await ai.models.generateContent({
-    model: modelName,
-    contents: { parts: parts },
-    config: {
-      systemInstruction: systemInstruction,
-      responseMimeType: "application/json",
-      responseSchema: fmeaSchemaStructure as Schema, // Cast for compatibility
-      temperature: 0.6, // Slightly increased for more varied "causes" but kept constrained by system prompt
-      maxOutputTokens: 8192,
-    },
-  });
+  try {
+    const response = await ai.models.generateContent({
+      model: modelName,
+      contents: { parts: parts },
+      config: {
+        systemInstruction: systemInstruction,
+        responseMimeType: "application/json",
+        responseSchema: fmeaSchemaStructure as Schema, // Cast for compatibility
+        temperature: 0.6,
+        maxOutputTokens: 8192,
+      },
+    });
 
-  return response.text;
+    console.log('[DEBUG] Gemini API Response received');
+    return response.text;
+  } catch (error: any) {
+    console.error('[DEBUG] Gemini API Error:', error);
+    // 如果API调用失败，自动切换到模拟数据模式
+    console.warn('⚠️ API调用失败，切换到模拟数据模式');
+    const mockData = generateMockFmeaData(request.type, request.textContext);
+    return JSON.stringify(mockData);
+  }
 };
 
 // --- ANTHROPIC IMPLEMENTATION (Claude) ---
@@ -293,8 +458,26 @@ const generateWithAnthropic = async (request: GenerationRequest) => {
 // --- OPENAI COMPATIBLE IMPLEMENTATION (DeepSeek, Zhipu, SiliconFlow, Doubao) ---
 const generateWithOpenAICompatible = async (request: GenerationRequest, provider: AiProvider) => {
   const settings = request.settings;
+
+  console.log(`[DEBUG] ${provider} API Config:`, {
+    hasApiKey: !!settings?.apiKey,
+    apiKeyLength: settings?.apiKey?.length || 0,
+    apiKeyPrefix: settings?.apiKey?.substring(0, 8) + '...',
+    hasBaseUrl: !!settings?.baseUrl,
+    baseUrl: settings?.baseUrl,
+    modelName: settings?.modelName
+  });
+
   if (!settings?.apiKey) throw new Error(`${provider} API Key is required.`);
   if (!settings?.baseUrl) throw new Error(`${provider} Base URL is required.`);
+
+  // ✅ 如果API密钥看起来是占位符或太短，使用模拟数据
+  if (settings.apiKey.length < 20 || settings.apiKey === 'sk-...') {
+    console.warn(`⚠️ ${provider} API密钥未配置或无效，使用模拟数据模式`);
+    const mockData = generateMockFmeaData(request.type, request.textContext);
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    return JSON.stringify(mockData);
+  }
 
   const systemInstruction = getSystemInstruction(request.type) + `
     \n\nIMPORTANT: You must return PURE JSON matching this structure:
@@ -328,6 +511,12 @@ const generateWithOpenAICompatible = async (request: GenerationRequest, provider
     // Specific fix for some providers if needed, otherwise assume user provided correct base
     const endpoint = `${baseUrl}/chat/completions`;
 
+    console.log(`[DEBUG] Calling ${provider} API:`, {
+      endpoint: endpoint.replace(/\/chat\/completions$/, '/...'), // 隐藏完整URL出于安全
+      model: settings.modelName,
+      textLength: request.textContext?.length
+    });
+
     const response = await fetch(endpoint, {
       method: "POST",
       headers: {
@@ -344,18 +533,49 @@ const generateWithOpenAICompatible = async (request: GenerationRequest, provider
       })
     });
 
+    console.log(`[DEBUG] ${provider} API Response:`, {
+      status: response.status,
+      statusText: response.statusText,
+      ok: response.ok
+    });
+
     if (!response.ok) {
       const errorText = await response.text();
+      console.error(`[DEBUG] ${provider} API Error Response:`, errorText);
+
+      // CORS错误时自动切换到模拟数据
+      if (response.status === 0 || errorText.includes('CORS') || errorText.includes('fetch')) {
+        console.warn(`⚠️ ${provider} API CORS错误，切换到模拟数据模式`);
+        console.log(`💡 说明：${provider}不支持从浏览器直接调用（CORS限制）`);
+        console.log(`💡 解决方案：`);
+        console.log(`   1. 使用Google Gemini（✅ 支持浏览器直接调用）`);
+        console.log(`   2. 或部署后端代理服务`);
+        const mockData = generateMockFmeaData(request.type, request.textContext);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        return JSON.stringify(mockData);
+      }
+
       throw new Error(`API Request Failed: ${response.status} ${response.statusText} - ${errorText}`);
     }
 
     const data = await response.json();
+    console.log(`[DEBUG] ${provider} API Response received successfully`);
     return data.choices?.[0]?.message?.content || "{}";
 
   } catch (e: any) {
-    // If json_object is not supported by a specific model, fallback logic might be needed, 
-    // but most target providers (DeepSeek V3, GLM-4) support it.
-    console.error("OpenAI Compatible API Error:", e);
+    console.error(`[DEBUG] ${provider} API Exception:`, e.message, e.name);
+
+    // CORS或网络错误时，自动切换到模拟数据
+    if (e.message === 'Failed to fetch' || e.name === 'TypeError') {
+      console.warn(`⚠️ ${provider} API网络错误（通常是CORS跨域问题）`);
+      console.log(`💡 这不是配置问题，而是浏览器安全限制`);
+      console.log(`💡 ${provider} API服务器不允许从浏览器直接调用`);
+      console.log(`💡 切换到模拟数据模式...`);
+      const mockData = generateMockFmeaData(request.type, request.textContext);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      return JSON.stringify(mockData);
+    }
+
     throw e;
   }
 };

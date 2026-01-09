@@ -22,12 +22,12 @@ export default function ProjectDetail({ project, onBack, onUpdate }: ProjectDeta
   const handleSave = async () => {
     try {
       setLoading(true);
-      const authData = localStorage.getItem('auth');
+      const authData = localStorage.getItem('fmea_auth_token');
       if (!authData) {
         return;
       }
 
-      const { token, userInfo } = JSON.parse(authData);
+      const { userInfo } = JSON.parse(authData);
       const response = await fetch(API_ENDPOINTS.collaboration.project(project.id), {
         method: 'PUT',
         headers: {
@@ -62,12 +62,12 @@ export default function ProjectDetail({ project, onBack, onUpdate }: ProjectDeta
     }
 
     try {
-      const authData = localStorage.getItem('auth');
+      const authData = localStorage.getItem('fmea_auth_token');
       if (!authData) {
         return;
       }
 
-      const { token, userInfo } = JSON.parse(authData);
+      const { userInfo } = JSON.parse(authData);
       const response = await fetch(API_ENDPOINTS.collaboration.collaborators(project.id), {
         method: 'POST',
         headers: {
@@ -96,12 +96,12 @@ export default function ProjectDetail({ project, onBack, onUpdate }: ProjectDeta
     }
 
     try {
-      const authData = localStorage.getItem('auth');
+      const authData = localStorage.getItem('fmea_auth_token');
       if (!authData) {
         return;
       }
 
-      const { token, userInfo } = JSON.parse(authData);
+      const { userInfo } = JSON.parse(authData);
       const response = await fetch(API_ENDPOINTS.collaboration.collaborator(project.id, collaboratorId), {
         method: 'DELETE',
         headers: {
@@ -144,7 +144,7 @@ export default function ProjectDetail({ project, onBack, onUpdate }: ProjectDeta
     return statusMap[status];
   };
 
-  const authData = localStorage.getItem('auth');
+  const authData = localStorage.getItem('fmea_auth_token');
   const currentUserId = authData ? JSON.parse(authData).userInfo.id : '';
   const isOwner = project.createdBy === currentUserId;
 

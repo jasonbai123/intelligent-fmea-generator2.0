@@ -178,6 +178,32 @@ class KVDB {
     }
   }
 
+  async getAllVerificationCodes() {
+    try {
+      const codeKeys = await this.kv.list({
+        prefix: KEY_PREFIXES.VERIFICATION_CODE
+      });
+      
+      const codes = [];
+      for (const key of codeKeys.keys) {
+        const codeData = await this.kv.get(key.name);
+        if (codeData) {
+          const code = JSON.parse(codeData);
+          codes.push({
+            phone: key.name.replace(KEY_PREFIXES.VERIFICATION_CODE, ''),
+            code: code.code,
+            expiresAt: code.expiresAt,
+            createdAt: Date.now()
+          });
+        }
+      }
+      return codes;
+    } catch (error) {
+      console.error('获取所有验证码失败:', error);
+      return [];
+    }
+  }
+
   // 项目相关方法
   async createProject(project) {
     try {

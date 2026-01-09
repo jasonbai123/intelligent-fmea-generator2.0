@@ -19,14 +19,14 @@ export default function ProjectList({ onSelectProject, onCreateProject }: Projec
 
   const loadProjects = async () => {
     try {
-      const authData = localStorage.getItem('auth');
+      const authData = localStorage.getItem('fmea_auth_token');
       if (!authData) {
         setError('未登录');
         setLoading(false);
         return;
       }
 
-      const { token, userInfo } = JSON.parse(authData);
+      const { userInfo } = JSON.parse(authData);
       const response = await fetch(API_ENDPOINTS.collaboration.projects, {
         headers: {
           'Content-Type': 'application/json',
@@ -56,12 +56,12 @@ export default function ProjectList({ onSelectProject, onCreateProject }: Projec
     }
 
     try {
-      const authData = localStorage.getItem('auth');
+      const authData = localStorage.getItem('fmea_auth_token');
       if (!authData) {
         return;
       }
 
-      const { token, userInfo } = JSON.parse(authData);
+      const { userInfo } = JSON.parse(authData);
       const response = await fetch(API_ENDPOINTS.collaboration.project(projectId), {
         method: 'DELETE',
         headers: {

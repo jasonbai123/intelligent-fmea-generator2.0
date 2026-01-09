@@ -22,12 +22,12 @@ export default function VersionManagement({ projectId, currentVersion, onVersion
 
   const loadVersions = async () => {
     try {
-      const authData = localStorage.getItem('auth');
+      const authData = localStorage.getItem('fmea_auth_token');
       if (!authData) {
         return;
       }
 
-      const { token, userInfo } = JSON.parse(authData);
+      const { userInfo } = JSON.parse(authData);
       const response = await fetch(API_ENDPOINTS.collaboration.versions(projectId), {
         headers: {
           'Content-Type': 'application/json',
@@ -57,12 +57,12 @@ export default function VersionManagement({ projectId, currentVersion, onVersion
 
     try {
       setCreating(true);
-      const authData = localStorage.getItem('auth');
+      const authData = localStorage.getItem('fmea_auth_token');
       if (!authData) {
         return;
       }
 
-      const { token, userInfo } = JSON.parse(authData);
+      const { userInfo } = JSON.parse(authData);
       const response = await fetch(API_ENDPOINTS.collaboration.versions(projectId), {
         method: 'POST',
         headers: {
@@ -93,12 +93,12 @@ export default function VersionManagement({ projectId, currentVersion, onVersion
     }
 
     try {
-      const authData = localStorage.getItem('auth');
+      const authData = localStorage.getItem('fmea_auth_token');
       if (!authData) {
         return;
       }
 
-      const { token, userInfo } = JSON.parse(authData);
+      const { userInfo } = JSON.parse(authData);
       const response = await fetch(API_ENDPOINTS.collaboration.restoreVersion(projectId, version.toString()), {
         method: 'POST',
         headers: {

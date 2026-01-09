@@ -1,11 +1,15 @@
 import KVDB from './utils/db';
 import AuthHandlers from './handlers/auth';
+import CollaborationHandlers from './handlers/collaboration';
+import AIHandlers from './handlers/ai';
 
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    const db = new KVDB(env.DATA);
+    const db = new KVDB(env.FMEA_DATA);
     const authHandlers = new AuthHandlers(db);
+    const collabHandlers = new CollaborationHandlers(db);
+    const aiHandlers = new AIHandlers(env);
 
     const headers = {
       'Content-Type': 'application/json',
@@ -34,6 +38,10 @@ export default {
       return authHandlers.handleGetUsers(request);
     }
 
+    if (url.pathname === '/api/auth/verification-codes' && request.method === 'GET') {
+      return authHandlers.handleGetAllVerificationCodes(request);
+    }
+
     if (url.pathname.startsWith('/api/users/') && request.method === 'PUT') {
       const parts = url.pathname.split('/');
       const phone = parts[3];
@@ -50,6 +58,88 @@ export default {
 
     if (url.pathname.startsWith('/api/users/') && request.method === 'DELETE') {
       return authHandlers.handleDeleteUser(request);
+    }
+
+    if (url.pathname === '/api/collaboration/projects' && request.method === 'GET') {
+      return collabHandlers.handleGetProjects(request);
+    }
+
+    if (url.pathname === '/api/collaboration/projects' && request.method === 'POST') {
+      return collabHandlers.handleCreateProject(request);
+    }
+
+    if (url.pathname.match(/^\/api\/collaboration\/projects\/[^/]+$/) && request.method === 'GET') {
+      const parts = url.pathname.split('/');
+      const projectId = parts[4];
+      return collabHandlers.handleGetProject(request, projectId);
+    }
+
+    if (url.pathname.match(/^\/api\/collaboration\/projects\/[^/]+$/) && request.method === 'PUT') {
+      const parts = url.pathname.split('/');
+      const projectId = parts[4];
+      return collabHandlers.handleUpdateProject(request, projectId);
+    }
+
+    if (url.pathname.match(/^\/api\/collaboration\/projects\/[^/]+$/) && request.method === 'DELETE') {
+      const parts = url.pathname.split('/');
+      const projectId = parts[4];
+      return collabHandlers.handleDeleteProject(request, projectId);
+    }
+
+    if (url.pathname.match(/^\/api\/collaboration\/projects\/[^/]+\/versions$/) && request.method === 'GET') {
+      const parts = url.pathname.split('/');
+      const projectId = parts[4];
+      return collabHandlers.handleGetVersions(request, projectId);
+    }
+
+    if (url.pathname.match(/^\/api\/collaboration\/projects\/[^/]+\/versions\/[^/]+\/restore$/) && request.method === 'POST') {
+      const parts = url.pathname.split('/');
+      const projectId = parts[4];
+      const version = parts[6];
+      return collabHandlers.handleRestoreVersion(request, projectId, version);
+    }
+
+    if (url.pathname.match(/^\/api\/collaboration\/projects\/[^/]+\/comments$/) && request.method === 'GET') {
+      const parts = url.pathname.split('/');
+      const projectId = parts[4];
+      return collabHandlers.handleGetComments(request, projectId);
+    }
+
+    if (url.pathname.match(/^\/api\/collaboration\/projects\/[^/]+\/comments$/) && request.method === 'POST') {
+      const parts = url.pathname.split('/');
+      const projectId = parts[4];
+      return collabHandlers.handleCreateComment(request, projectId);
+    }
+
+    if (url.pathname.match(/^\/api\/collaboration\/projects\/[^/]+\/comments\/[^/]+$/) && request.method === 'PUT') {
+      const parts = url.pathname.split('/');
+      const projectId = parts[4];
+      const commentId = parts[6];
+      return collabHandlers.handleUpdateComment(request, projectId, commentId);
+    }
+
+    if (url.pathname.match(/^\/api\/collaboration\/projects\/[^/]+\/comments\/[^/]+$/) && request.method === 'DELETE') {
+      const parts = url.pathname.split('/');
+      const projectId = parts[4];
+      const commentId = parts[6];
+      return collabHandlers.handleDeleteComment(request, projectId, commentId);
+    }
+
+    if (url.pathname.match(/^\/api\/collaboration\/projects\/[^/]+\/comments\/[^/]+\/replies$/) && request.method === 'POST') {
+      const parts = url.pathname.split('/');
+      const projectId = parts[4];
+      const commentId = parts[6];
+      return collabHandlers.handleAddReply(request, projectId, commentId);
+    }
+
+    if (url.pathname === '/api/ai/providers' && request.method === 'GET') {
+      return aiHandlers.handleGetProviders(request);
+    }
+
+    if (url.pathname.match(/^\/api\/ai\/[^/]+\/chat$/) && request.method === 'POST') {
+      const parts = url.pathname.split('/');
+      const provider = parts[3];
+      return aiHandlers.handleAIRequest(provider, request);
     }
 
     return new Response(JSON.stringify({ message: 'Not Found' }), {

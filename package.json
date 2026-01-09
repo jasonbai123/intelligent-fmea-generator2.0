@@ -3,10 +3,12 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "homepage": "https://intelligent-fmea-generator2.pages.dev",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy:pages": "npm run build && npx wrangler pages deploy docs --project-name=intelligent-fmea-generator"
   },
   "dependencies": {
     "@google/genai": "^1.34.0",

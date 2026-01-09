@@ -1,57 +1,45 @@
 import React, { useEffect, useState } from 'react';
 import { AiProvider, AiSettings, DEFAULT_AI_SETTINGS } from '../types';
-import { Save, RotateCcw, ShieldCheck, Key, Server, Cpu } from 'lucide-react';
+import { Save, RotateCcw, ShieldCheck, Server, Cpu } from 'lucide-react';
 
 interface AiSettingsProps {
   settings: AiSettings;
   onSave: (settings: AiSettings) => void;
 }
 
-const PROVIDER_CONFIGS: Record<AiProvider, { name: string; defaultBaseUrl: string; defaultModel: string; placeholder: string }> = {
+const PROVIDER_CONFIGS: Record<AiProvider, { name: string; description: string }> = {
   [AiProvider.GEMINI]: {
     name: 'Google Gemini',
-    defaultBaseUrl: '', // Not used for SDK
-    defaultModel: 'gemini-2.0-flash',
-    placeholder: '使用默认的环境变量 API Key (推荐)'
+    description: 'Google 的多模态大语言模型，支持文本和图像输入'
   },
   [AiProvider.DEEPSEEK]: {
     name: 'DeepSeek (深度求索)',
-    defaultBaseUrl: 'https://api.deepseek.com',
-    defaultModel: 'deepseek-chat',
-    placeholder: 'sk-...'
+    description: '深度求索的中文优化大模型'
   },
   [AiProvider.ZHIPU]: {
     name: '智谱 AI (GLM)',
-    defaultBaseUrl: 'https://open.bigmodel.cn/api/paas/v4',
-    defaultModel: 'glm-4-flash',
-    placeholder: 'Key...'
+    description: '智谱AI的GLM系列大模型'
   },
   [AiProvider.SILICONFLOW]: {
     name: '硅基流动 (SiliconFlow)',
-    defaultBaseUrl: 'https://api.siliconflow.cn/v1',
-    defaultModel: 'deepseek-ai/DeepSeek-V3',
-    placeholder: 'sk-...'
+    description: '硅基流动的AI服务平台'
   },
   [AiProvider.DOUBAO]: {
     name: '火山引擎 (豆包)',
-    defaultBaseUrl: 'https://ark.cn-beijing.volces.com/api/v3',
-    defaultModel: 'ep-2024xxxxxxxx-xxxxx', // Endpoint ID usually
-    placeholder: 'Access Key / API Key'
+    description: '字节跳动的AI大模型'
   },
   [AiProvider.CLAUDE]: {
     name: 'Anthropic (Claude)',
-    defaultBaseUrl: 'https://api.anthropic.com/v1',
-    defaultModel: 'claude-3-5-sonnet-20240620',
-    placeholder: 'sk-ant-...'
+    description: 'Anthropic的Claude系列大模型'
   }
 };
 
 const GEMINI_MODELS = [
   { label: 'Gemini 2.0 Flash (Default)', value: 'gemini-2.0-flash' },
+  { label: 'Gemini 2.0 Flash Exp', value: 'gemini-2.0-flash-exp' },
+  { label: 'Gemini 1.5 Flash', value: 'gemini-1.5-flash' },
   { label: 'Gemini 1.5 Pro', value: 'gemini-1.5-pro' },
-  { label: 'Gemini 3.0 Pro (Preview)', value: 'gemini-3-pro-preview' },
-  { label: 'Gemini 2.5 Flash', value: 'gemini-2.5-flash-preview' },
-  { label: 'Gemini 2.5 Pro (Custom Input)', value: 'gemini-2.5-pro-preview' }, // Assuming potential future name or user intent
+  { label: '自定义 (Custom)...', value: 'custom' },
 ];
 
 export const AiSettingsPage: React.FC<AiSettingsProps> = ({ settings, onSave }) => {
@@ -69,10 +57,19 @@ export const AiSettingsPage: React.FC<AiSettingsProps> = ({ settings, onSave }) 
       // Auto-fill defaults when provider changes
       if (field === 'provider') {
         const provider = value as AiProvider;
-        const config = PROVIDER_CONFIGS[provider];
-        newData.baseUrl = config.defaultBaseUrl;
-        newData.modelName = config.defaultModel;
-        newData.apiKey = ''; // Clear key on switch for security/clarity
+        if (provider === AiProvider.GEMINI) {
+          newData.modelName = 'gemini-2.0-flash';
+        } else if (provider === AiProvider.DEEPSEEK) {
+          newData.modelName = 'deepseek-chat';
+        } else if (provider === AiProvider.ZHIPU) {
+          newData.modelName = 'glm-4';
+        } else if (provider === AiProvider.SILICONFLOW) {
+          newData.modelName = 'Qwen/Qwen2.5-72B-Instruct';
+        } else if (provider === AiProvider.DOUBAO) {
+          newData.modelName = 'doubao-pro-32k';
+        } else if (provider === AiProvider.CLAUDE) {
+          newData.modelName = 'claude-3-5-sonnet-20241022';
+        }
       }
       return newData;
     });
@@ -92,8 +89,6 @@ export const AiSettingsPage: React.FC<AiSettingsProps> = ({ settings, onSave }) 
     }
   };
 
-  const currentConfig = PROVIDER_CONFIGS[formData.provider];
-
   return (
     <div className="animate-fade-in max-w-2xl mx-auto">
       <header className="mb-8 border-b border-slate-200 pb-4">
@@ -110,51 +105,34 @@ export const AiSettingsPage: React.FC<AiSettingsProps> = ({ settings, onSave }) 
         
         {/* Provider Selection */}
         <div>
-          <label className="block text-sm font-bold text-slate-700 mb-2">选择服务商</label>
+          <label className="block text-sm font-bold text-slate-700 mb-2">选择AI服务商</label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {Object.entries(PROVIDER_CONFIGS).map(([key, config]) => (
               <button
                 type="button"
                 key={key}
                 onClick={() => handleChange('provider', key)}
-                className={`px-4 py-3 rounded-lg border text-left flex items-center gap-2 transition-all ${
+                className={`px-4 py-3 rounded-lg border text-left transition-all ${
                   formData.provider === key 
                     ? 'border-blue-500 bg-blue-50 text-blue-700 ring-1 ring-blue-500' 
                     : 'border-slate-200 hover:border-slate-300 text-slate-600'
                 }`}
               >
-                <div className={`w-3 h-3 rounded-full ${formData.provider === key ? 'bg-blue-500' : 'bg-slate-300'}`} />
-                <span className="font-medium text-sm">{config.name}</span>
+                <div className="flex items-center gap-2 mb-1">
+                  <div className={`w-3 h-3 rounded-full ${formData.provider === key ? 'bg-blue-500' : 'bg-slate-300'}`} />
+                  <span className="font-medium text-sm">{config.name}</span>
+                </div>
+                <p className="text-xs text-slate-500 ml-5">{config.description}</p>
               </button>
             ))}
           </div>
-        </div>
-
-        {/* API Key */}
-        <div>
-          <label className="block text-sm font-bold text-slate-700 mb-2 flex items-center gap-2">
-            <Key size={16} />
-            API Key
-          </label>
-          <input
-            type="password"
-            value={formData.apiKey}
-            onChange={(e) => handleChange('apiKey', e.target.value)}
-            placeholder={currentConfig.placeholder}
-            className="w-full p-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none font-mono text-sm"
-          />
-          <p className="text-xs text-slate-400 mt-1">
-             {formData.provider === AiProvider.GEMINI 
-               ? '留空则使用部署时配置的环境变量 (process.env.API_KEY)。'
-               : '您的 Key 仅存储在本地浏览器中，不会发送到任何第三方服务器。'}
-          </p>
         </div>
 
         {/* Model Name */}
         <div>
           <label className="block text-sm font-bold text-slate-700 mb-2 flex items-center gap-2">
             <Cpu size={16} />
-            模型名称 (Model Name)
+            模型名称
           </label>
           
           {formData.provider === AiProvider.GEMINI ? (
@@ -170,7 +148,6 @@ export const AiSettingsPage: React.FC<AiSettingsProps> = ({ settings, onSave }) 
                 <option value="custom">自定义 (Custom)...</option>
               </select>
               
-              {/* Allow custom input if model is not in list or user wants to override */}
               {!GEMINI_MODELS.some(m => m.value === formData.modelName) && (
                 <input
                   type="text"
@@ -186,38 +163,28 @@ export const AiSettingsPage: React.FC<AiSettingsProps> = ({ settings, onSave }) 
               type="text"
               value={formData.modelName}
               onChange={(e) => handleChange('modelName', e.target.value)}
-              placeholder={currentConfig.defaultModel}
+              placeholder="使用默认模型"
               className="w-full p-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none font-mono text-sm"
             />
           )}
           
           <p className="text-xs text-slate-400 mt-1">
-             当前选择: {formData.modelName}。
-             {formData.provider === AiProvider.GEMINI && " 支持 Gemini 1.5 Pro, 2.5 Flash, 3.0 Pro 等模型。"}
+             当前选择: {formData.modelName}
           </p>
         </div>
 
-        {/* Base URL */}
-        {formData.provider !== AiProvider.GEMINI && (
-          <div>
-            <label className="block text-sm font-bold text-slate-700 mb-2 flex items-center gap-2">
-              <Server size={16} />
-              API Base URL
-            </label>
-            <input
-              type="text"
-              value={formData.baseUrl}
-              onChange={(e) => handleChange('baseUrl', e.target.value)}
-              placeholder={currentConfig.defaultBaseUrl}
-              className="w-full p-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none font-mono text-sm"
-            />
-             {formData.provider === AiProvider.CLAUDE && (
-              <p className="text-xs text-amber-600 mt-1">
-                注意: 原生 Anthropic API 可能不支持浏览器直接调用 (CORS)。如遇网络错误，请尝试使用支持 CORS 的代理地址。
+        {/* Info Banner */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <ShieldCheck className="text-blue-600 mt-0.5 flex-shrink-0" size={18} />
+            <div className="text-sm">
+              <p className="font-medium text-blue-900 mb-1">API密钥已配置</p>
+              <p className="text-blue-700">
+                AI服务的API密钥已在后端配置，您无需在前端输入。所有API调用都通过后端代理进行，确保安全性。
               </p>
-            )}
+            </div>
           </div>
-        )}
+        </div>
 
         <div className="pt-4 flex items-center justify-between border-t border-slate-100 mt-6">
           <button

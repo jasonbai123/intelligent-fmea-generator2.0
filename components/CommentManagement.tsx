@@ -24,12 +24,12 @@ export default function CommentManagement({ projectId }: CommentManagementProps)
 
   const loadComments = async () => {
     try {
-      const authData = localStorage.getItem('auth');
+      const authData = localStorage.getItem('fmea_auth_token');
       if (!authData) {
         return;
       }
 
-      const { token, userInfo } = JSON.parse(authData);
+      const { userInfo } = JSON.parse(authData);
       const response = await fetch(API_ENDPOINTS.collaboration.comments(projectId), {
         headers: {
           'Content-Type': 'application/json',
@@ -58,12 +58,12 @@ export default function CommentManagement({ projectId }: CommentManagementProps)
     }
 
     try {
-      const authData = localStorage.getItem('auth');
+      const authData = localStorage.getItem('fmea_auth_token');
       if (!authData) {
         return;
       }
 
-      const { token, userInfo } = JSON.parse(authData);
+      const { userInfo } = JSON.parse(authData);
       const response = await fetch(API_ENDPOINTS.collaboration.comments(projectId), {
         method: 'POST',
         headers: {
@@ -97,12 +97,12 @@ export default function CommentManagement({ projectId }: CommentManagementProps)
     }
 
     try {
-      const authData = localStorage.getItem('auth');
+      const authData = localStorage.getItem('fmea_auth_token');
       if (!authData) {
         return;
       }
 
-      const { token, userInfo } = JSON.parse(authData);
+      const { userInfo } = JSON.parse(authData);
       const response = await fetch(API_ENDPOINTS.collaboration.replies(projectId, commentId), {
         method: 'POST',
         headers: {
@@ -127,12 +127,12 @@ export default function CommentManagement({ projectId }: CommentManagementProps)
 
   const handleToggleResolved = async (comment: Comment) => {
     try {
-      const authData = localStorage.getItem('auth');
+      const authData = localStorage.getItem('fmea_auth_token');
       if (!authData) {
         return;
       }
 
-      const { token, userInfo } = JSON.parse(authData);
+      const { userInfo } = JSON.parse(authData);
       const response = await fetch(API_ENDPOINTS.collaboration.comment(projectId, comment.id), {
         method: 'PUT',
         headers: {
@@ -159,12 +159,12 @@ export default function CommentManagement({ projectId }: CommentManagementProps)
     }
 
     try {
-      const authData = localStorage.getItem('auth');
+      const authData = localStorage.getItem('fmea_auth_token');
       if (!authData) {
         return;
       }
 
-      const { token, userInfo } = JSON.parse(authData);
+      const { userInfo } = JSON.parse(authData);
       const response = await fetch(API_ENDPOINTS.collaboration.comment(projectId, commentId), {
         method: 'DELETE',
         headers: {
@@ -191,12 +191,12 @@ export default function CommentManagement({ projectId }: CommentManagementProps)
     }
 
     try {
-      const authData = localStorage.getItem('auth');
+      const authData = localStorage.getItem('fmea_auth_token');
       if (!authData) {
         return;
       }
 
-      const { token, userInfo } = JSON.parse(authData);
+      const { userInfo } = JSON.parse(authData);
       const response = await fetch(API_ENDPOINTS.collaboration.comment(projectId, commentId), {
         method: 'PUT',
         headers: {
@@ -236,7 +236,7 @@ export default function CommentManagement({ projectId }: CommentManagementProps)
     }
   };
 
-  const authData = localStorage.getItem('auth');
+  const authData = localStorage.getItem('fmea_auth_token');
   const currentUserId = authData ? JSON.parse(authData).userInfo.id : '';
 
   return (
