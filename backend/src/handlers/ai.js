@@ -32,11 +32,11 @@ class AIHandlers {
         apiKey: env?.SILICONFLOW_API_KEY,
         model: 'Qwen/Qwen2.5-72B-Instruct'
       },
-      glm: {
+      zhipu: {
         name: '智谱AI (GLM)',
         endpoint: 'https://open.bigmodel.cn/api/paas/v4/chat/completions',
-        apiKey: env?.GLM_API_KEY,
-        model: 'glm-4'
+        apiKey: env?.ZHIPU_API_KEY,
+        model: 'glm-4-plus'
       }
     };
   }
@@ -55,27 +55,29 @@ class AIHandlers {
 
   async handleAIRequest(provider, request) {
     try {
-      const providerConfig = this.AI_PROVIDERS[provider];
+      // Support both 'zhipu' and 'glm' for backwards compatibility
+      const normalizedProvider = provider === 'glm' ? 'zhipu' : provider;
+      const providerConfig = this.AI_PROVIDERS[normalizedProvider];
 
       if (!providerConfig) {
         return this.createResponse({ message: `不支持的AI服务提供商: ${provider}` }, 400);
       }
 
-      const body = await request.json();
-      const { messages, model, temperature, max_tokens, apiKey: frontendApiKey } = body;
-
-      // 优先使用前端传过来的API KEY，如果没有则使用后端环境变量中的KEY
-      const apiKey = frontendApiKey || providerConfig.apiKey;
-
-      if (!apiKey) {
+      if (!providerConfig.apiKey) {
         return this.createResponse({
-          message: `API密钥未配置。请在前端"AI API设置"中输入您的${providerConfig.name} API密钥，或联系管理员配置后端默认密钥。`
-        }, 400);
+          message: `${providerConfig.name} API密钥未配置。请联系管理员在后端环境变量中配置。`
+        }, 500);
       }
+
+      const body = await request.json();
+      const { messages, model, temperature, max_tokens } = body;
 
       if (!messages || !Array.isArray(messages)) {
         return this.createResponse({ message: '请提供有效的消息数组' }, 400);
       }
+
+      // 仅使用后端环境变量中的 API KEY
+      const apiKey = providerConfig.apiKey;
 
       let requestBody;
       let headers = {

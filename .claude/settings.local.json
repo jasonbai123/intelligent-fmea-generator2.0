@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run test:*)",
+      "Bash(node:*)",
+      "Bash(dir:*)",
+      "Bash(start \"\" \"c:\\\\Users\\\\abc05\\\\Downloads\\\\intelligent-fmea-generator\\\\test-results\\\\summary-2026-01-10T08-22-23-722Z.html\")",
+      "Bash(npm run test:unit:*)",
+      "Bash(start:*)",
+      "Bash(npm run build:*)",
+      "Bash(curl:*)",
+      "Bash(npm run dev)",
+      "Bash(git add:*)"
+    ]
+  }
+}

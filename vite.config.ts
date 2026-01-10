@@ -9,14 +9,28 @@ export default defineConfig(({ mode }) => {
       build: {
         outDir: 'docs',
         chunkSizeWarningLimit: 1000,
+        sourcemap: false,
         rollupOptions: {
           output: {
-            manualChunks: {
-              react: ['react', 'react-dom'],
-              lucide: ['lucide-react'],
-              xlsx: ['xlsx', 'exceljs'],
-              google: ['@google/genai']
-            }
+            manualChunks: (id) => {
+              if (id.includes('node_modules')) {
+                if (id.includes('react') || id.includes('react-dom')) {
+                  return 'react';
+                }
+                if (id.includes('lucide-react')) {
+                  return 'lucide';
+                }
+                if (id.includes('xlsx') || id.includes('exceljs')) {
+                  return 'xlsx';
+                }
+                if (id.includes('@google/genai')) {
+                  return 'google';
+                }
+              }
+            },
+            chunkFileNames: 'assets/[name]-[hash].js',
+            entryFileNames: 'assets/[name]-[hash].js',
+            assetFileNames: 'assets/[name]-[hash].[ext]'
           }
         }
       },

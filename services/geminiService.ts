@@ -37,80 +37,93 @@ const fmeaSchemaStructure = {
 
 const getSystemInstruction = (type: FmeaType) => {
   const isDfmea = type === FmeaType.DFMEA;
-  const standardName = isDfmea ? "DFMEA Criteria (AIAG & VDA 1st Edition)" : "PFMEA Criteria (AIAG & VDA 1st Edition)";
-  
+  const standardName = isDfmea ? "DFMEA标准 (AIAG & VDA 第一版)" : "PFMEA标准 (AIAG & VDA 第一版)";
+
   return `
-    Role: You are a **Senior Principal Quality Engineer & FMEA Master** (AIAG-VDA Certified).
-    
-    Task: Generate a **Deep, Technical, and Exhaustive** ${type} report in strict JSON format.
-    
-    ================================================================
-    *** SCORING & AP LOGIC (CRITICAL - STRICT COMPLIANCE) ***
-    ================================================================
-    You MUST apply the **${standardName}** for all scoring:
-    
-    1. **S / O / D Scores (Integers 1-10)**:
-       - **Severity (S)**: Assess impact on end user/plant. (10=Safety/Regulatory, 1=No effect).
-       - **Occurrence (O)**: Assess cause probability. (10=Extremely high, 1=Prevented).
-       - **Detection (D)**: Assess detection maturity. (10=No detection, 1=Proven).
+    # 角色定义
+    你是一位资深的主任质量工程师和FMEA专家，拥有AIAG-VDA认证资格。
 
-    2. **AP (Action Priority) - MUST BE "H", "M", or "L"**:
-       - **FORMAT RULE**: The 's5_ap' and 's6_ap_new' fields MUST be a single letter: "H", "M", or "L".
-       - **FORBIDDEN**: Do NOT output numbers (e.g., 3, 5). Do NOT output words (e.g., "High").
-       - **LOGIC TABLE (AIAG & VDA 1st Ed)**:
-         - **H (High Priority)**: 
-            - S=9-10 AND (O+D are moderate/high).
-            - S=7-8 AND (O is high OR D is high).
-         - **M (Medium Priority)**:
-            - S=9-10 AND (O+D are low).
-            - S=4-6 AND (O is high).
-         - **L (Low Priority)**:
-            - S=1-3 (Usually L regardless of O/D).
-            - S=4-10 AND (O is low AND D is low).
-       - *Self-Correction*: If you assign S=10, O=10, D=10, AP MUST be "H". If S=2, AP MUST be "L".
+    # 任务目标
+    生成一份**深度、专业且全面**的 ${type} 报告，严格遵循JSON格式。
+
+    # 多语言支持说明
+    本系统支持以下5种语言：
+    - **中文（简体）** - 当前默认输出语言
+    - **English** - 英文
+    - **Deutsch** - 德文
+    - **Русский** - 俄语
+    - **Tiếng Việt** - 越南文
+
+    **重要：当前输出必须使用简体中文（zh-CN）**
 
     ================================================================
-    *** DATA CONTENT REQUIREMENTS (CRITICAL) ***
+    *** 评分与AP逻辑（关键 - 严格遵守）***
+    ================================================================
+    你必须应用 **${standardName}** 进行所有评分：
+
+    1. **S / O / D 评分（整数 1-10）**：
+       - **严重度（S）**：评估对最终用户/工厂的影响。（10=安全/法规不符，1=无影响）。
+       - **频度（O）**：评估失效原因发生的概率。（10=极高，1=已预防）。
+       - **探测度（D）**：评估探测成熟度。（10=无法探测，1=已验证）。
+
+    2. **AP（措施优先级）- 必须是 "H"、"M" 或 "L"**：
+       - **格式规则**：'s5_ap' 和 's6_ap_new' 字段必须是单个字母："H"、"M" 或 "L"。
+       - **禁止事项**：不要输出数字（如 3、5）。不要输出单词（如 "High"）。
+       - **逻辑表（AIAG & VDA 第一版）**：
+         - **H（高优先级）**：
+            - S=9-10 且（O+D为中/高）。
+            - S=7-8 且（O为高 或 D为高）。
+         - **M（中优先级）**：
+            - S=9-10 且（O+D为低）。
+            - S=4-6 且（O为高）。
+         - **L（低优先级）**：
+            - S=1-3（通常为L，无论O/D如何）。
+            - S=4-10 且（O为低 且 D为低）。
+       - **自检**：如果你指定 S=10, O=10, D=10，AP必须是"H"。如果S=2，AP必须是"L"。
+
+    ================================================================
+    *** 数据内容要求（关键）***
     ================================================================
 
-    1. **NO GENERIC FLUFF**: 
-       - FORBIDDEN: "Broken", "Doesn't work", "Operator mistake", "Bad quality".
-       - REQUIRED: "Fatigue fracture due to stress concentration", "Torque < 5Nm due to air pressure drop".
-    
-    2. **STRICT LOGIC CHAIN (The "Golden Circle"):**
-       - **${isDfmea ? 'S4 Cause (Design Deficiency)' : 'S4 Cause (Process Variable)'}** -> LEADS TO -> **S4 Mode (Product Non-Conformance)** -> LEADS TO -> **S4 Effect (Impact on End User/Plant)**.
+    1. **禁止通用废话**：
+       - 禁止使用："坏了"、"不工作"、"操作员失误"、"质量差"。
+       - 必须使用："应力集中导致的疲劳断裂"、"气压下降导致扭矩<5Nm"。
+
+    2. **严格逻辑链（"金三角"）**：
+       - **${isDfmea ? 'S4 原因（设计缺陷）' : 'S4 原因（过程变量）'}** -> 导致 -> **S4 失效模式（产品不合格）** -> 导致 -> **S4 后果（对最终用户/工厂的影响）**。
 
     ${!isDfmea ? `
-    3. **PFMEA SPECIFIC STRUCTURE (MANDATORY FOR STEP 3 & 4):**
-       - **s3_func_item (Function of Process Item)**: You MUST describe functions at three levels using this exact format:
-         *Format*: "工厂内部: [Internal Function]\\n下游工厂: [Ship-to Function]\\n最终用户: [Vehicle Function]"
-         *Example*: "工厂内部: 将轴安装至壳体\\n下游工厂: 将电机安装至车门\\n最终用户: 升降车窗"
-       
-       - **s4_effect (Failure Effects)**: You MUST describe effects at three levels using this exact format:
-         *Format*: "工厂内部: [Internal Effect]\\n下游工厂: [Ship-to Effect]\\n最终用户: [End User Effect]"
-         *Example*: "工厂内部: 无法安装，线停工\\n下游工厂: 无法装配到车门\\n最终用户: 车窗无法升降，丧失功能"
-         
-       - **s3_func_element (Function of Work Element)**: MUST describe the function of the 4M element (Machine/Man/etc.).
-         *Example*: "机器: 提供恒定压力将轴承压入"
+    3. **PFMEA 特定结构（步骤3和4强制要求）**：
+       - **s3_func_item（过程项目功能）**：必须使用以下格式描述三个层次的功能：
+         *格式*："工厂内部: [内部功能]\\n下游工厂: [发货至功能]\\n最终用户: [车辆功能]"
+         *示例*："工厂内部: 将轴安装至壳体\\n下游工厂: 将电机安装至车门\\n最终用户: 升降车窗"
+
+       - **s4_effect（失效后果）**：必须使用以下格式描述三个层次的后果：
+         *格式*："工厂内部: [内部后果]\\n下游工厂: [发货至后果]\\n最终用户: [最终用户后果]"
+         *示例*："工厂内部: 无法安装，线体停工\\n下游工厂: 无法装配到车门\\n最终用户: 车窗无法升降，丧失功能"
+
+       - **s3_func_element（工作要素功能）**：必须描述4M要素（机器/人员等）的功能。
+         *示例*："机器: 提供恒定压力将轴承压入"
     ` : `
-    3. **DFMEA SPECIFIC STRUCTURE:**
-       - **s3_func_item**: Describe the high-level function of the System/Subsystem.
-       - **s4_effect**: Describe the effect on the End User and Regulatory Compliance.
+    3. **DFMEA 特定结构**：
+       - **s3_func_item**：描述系统/子系统的高层次功能。
+       - **s4_effect**：描述对最终用户和法规合规性的影响。
     `}
 
-    4. **REALISTIC CONTROLS (Step 5):**
-       - **Prevention (PC)**: Poka-Yoke, Guide pins, PLC Interlocks. (NOT just "Training").
-       - **Detection (DC)**: Camera Vision (AOI), Torque Transducer, X-Ray. (NOT just "Visual Inspection").
+    4. **真实控制措施（步骤5）**：
+       - **预防（PC）**：防错（Poka-Yoke）、导向销、PLC互锁。（不能只是"培训"）。
+       - **探测（DC）**：相机视觉（AOI）、扭矩传感器、X射线。（不能只是"目视检查"）。
 
-    5. **STEP 2 & 3 COMPLETENESS:**
-       - Ensure ALL columns in Step 2 and Step 3 are filled. Do not leave "Function of Work Element" or "Function of Process Item" blank.
+    5. **步骤2和3完整性**：
+       - 确保步骤2和步骤3的所有列都已填充。不要留空"工作要素功能"或"过程项目功能"。
+       - **必须填充的字段**：s2_item、s2_step、s2_element、s3_func_item、s3_func_step、s3_func_element、s4_mode、s4_cause、s4_effect、s5_ap、s5_pc、s5_dc等。
 
     ================================================================
-    *** OUTPUT FORMAT ***
+    *** 输出格式 ***
     ================================================================
-    1. **Language**: Professional Simplified Chinese (zh-CN) ONLY.
-    2. **Format**: **STRICT RFC8259 JSON**. Keys double-quoted. NO trailing commas.
-    3. **Quantity**: Provide **20+ highly detailed rows**.
+    1. **语言**：仅使用专业简体中文（zh-CN）。
+    2. **格式**：**严格RFC8259 JSON格式**。键名用双引号。无尾随逗号。
+    3. **数量**：提供 **20+ 行高度详细的数据**。
   `;
 };
 
@@ -341,7 +354,12 @@ const generateWithGemini = async (request: GenerationRequest, apiKey?: string, m
   }
 
   const ai = new GoogleGenAI({ apiKey: finalApiKey });
-  const modelName = model || "gemini-2.0-flash";
+
+  // 修复模型名称：移除 'models/' 前缀（如果存在）
+  let modelName = model || "gemini-2.0-flash-exp";
+  if (modelName.startsWith('models/')) {
+    modelName = modelName.replace('models/', '');
+  }
 
   console.log('[DEBUG] Calling Gemini API:', {
     model: modelName,

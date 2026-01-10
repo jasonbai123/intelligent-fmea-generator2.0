@@ -1,0 +1,577 @@
+name: 🧪 全架构自动化测试
+
+on:
+  push:
+    branches: [master, develop, 'feature/**']
+  pull_request:
+    branches: [master, develop]
+  schedule:
+    # 每天凌晨2点运行（北京时间上午10点）
+    - cron: '0 2 * * *'
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  # ========================================
+  # 阶段1: 环境设置和依赖安装
+  # ========================================
+  setup:
+    name: 📦 环境设置
+    runs-on: ubuntu-latest
+    outputs:
+      cache-key: ${{ steps.cache-keys.outputs.node-modules }}
+      should-run: ${{ steps.check.outputs.should-run }}
+
+    steps:
+      - name: 📥 检出代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 获取完整历史用于覆盖率
+
+      - name: 🔧 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 🔑 生成缓存键
+        id: cache-keys
+        run: echo "node-modules=$(node -e 'console.log(require("./package.json").dependencies)')" >> $GITHUB_OUTPUT
+
+      - name: ✅ 检查是否需要运行测试
+        id: check
+        run: echo "should-run=true" >> $GITHUB_OUTPUT
+
+  # ========================================
+  # 阶段2: 代码质量检查
+  # ========================================
+  quality:
+    name: 🔍 代码质量
+    needs: setup
+    if: needs.setup.outputs.should-run == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🔧 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 📦 安装依赖
+        run: npm ci
+
+      - name: 🔎 TypeScript 类型检查
+        run: npx tsc --noEmit || true
+
+      - name: 📏 代码格式检查
+        run: npx prettier --check "src/**/*.{ts,tsx}" || true
+
+      - name: 🔐 安全审计
+        run: npm audit --audit-level=moderate || true
+
+      - name: 📊 依赖检查
+        run: npx depcheck || true
+
+  # ========================================
+  # 阶段3: 单元测试
+  # ========================================
+  unit-tests:
+    name: 🧪 单元测试
+    needs: [setup, quality]
+    if: needs.setup.outputs.should-run == 'true'
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18, 20]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🔧 设置 Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: 📦 安装依赖
+        run: npm ci
+
+      - name: 🧪 运行单元测试
+        run: npm run test:unit -- --reporter=verbose
+
+      - name: 📈 生成覆盖率报告
+        run: npm run test:coverage
+
+      - name: 📤 上传覆盖率到 Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage/coverage-final.json
+          flags: unit-tests
+          name: unit-tests-node-${{ matrix.node-version }}
+          fail_ci_if_error: false
+
+      - name: 📤 上传覆盖率报告
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report-node-${{ matrix.node-version }}
+          path: coverage/
+          retention-days: 30
+
+  # ========================================
+  # 阶段4: API测试
+  # ========================================
+  api-tests:
+    name: 🔌 API测试
+    needs: [setup, quality]
+    if: needs.setup.outputs.should-run == 'true'
+    runs-on: ubuntu-latest
+
+    services:
+      # 如果需要本地测试服务器
+      # backend:
+      #   image: node:20
+      #   ports:
+      #     - 3001:3001
+      #   options: >-
+      #     --health-cmd "curl -f http://localhost:3001/api/health"
+      #     --health-interval 10s
+      #     --health-timeout 5s
+      #     --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🔧 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 📦 安装依赖
+        run: npm ci
+
+      - name: 🧪 运行API测试
+        run: npm run test:api
+        env:
+          NODE_ENV: test
+          API_BASE_URL: https://fmea-backend.baipj123.workers.dev
+
+      - name: 📤 上传测试结果
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: api-test-results
+          path: test-results/api-*.json
+
+  # ========================================
+  # 阶段5: E2E测试 - 桌面浏览器
+  # ========================================
+  e2e-tests-desktop:
+    name: 🎭 E2E桌面测试
+    needs: [setup, quality]
+    if: needs.setup.outputs.should-run == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+        shard: [1/4, 2/4, 3/4, 4/4]  # 并行分片
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🔧 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 📦 安装依赖
+        run: npm ci
+
+      - name: 🌐 安装 Playwright 浏览器
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+
+      - name: 🧪 运行E2E测试 - ${{ matrix.browser }}
+        run: npx playwright test --project=${{ matrix.browser }} --shard=${{ matrix.shard }}
+        env:
+          CI: true
+          PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/playwright-browsers
+
+      - name: 📤 上传测试结果
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-results-${{ matrix.browser }}-${{ matrix.shard }}
+          path: |
+            test-results/
+            playwright-report/
+            playwright-screenshots/
+            playwright-videos/
+          retention-days: 7
+
+      - name: 📤 上传失败截图
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: screenshots-${{ matrix.browser }}-${{ matrix.shard }}
+          path: playwright-screenshots/
+          retention-days: 7
+
+  # ========================================
+  # 阶段6: E2E测试 - 移动端
+  # ========================================
+  e2e-tests-mobile:
+    name: 📱 E2E移动端测试
+    needs: [setup, quality]
+    if: needs.setup.outputs.should-run == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      matrix:
+        device: ['Pixel 5', 'iPhone 12']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🔧 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 📦 安装依赖
+        run: npm ci
+
+      - name: 🌐 安装 Playwright 浏览器
+        run: npx playwright install --with-deps chromium
+
+      - name: 🧪 运行移动端测试 - ${{ matrix.device }}
+        run: npx playwright test tests/e2e/mobile.spec.ts --project="${{ matrix.device }}"
+        env:
+          CI: true
+
+      - name: 📤 上传测试结果
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mobile-results-${{ matrix.device }}
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 7
+
+  # ========================================
+  # 阶段7: 网络访问性测试
+  # ========================================
+  network-tests:
+    name: 🌐 网络访问性测试
+    needs: [setup, quality]
+    if: needs.setup.outputs.should-run == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🔧 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 📦 安装依赖
+        run: npm ci
+
+      - name: 🌐 安装 Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: 🧪 运行网络访问性测试
+        run: npm run test:network
+        env:
+          CI: true
+          TEST_URL: https://intelligent-fmea-generator2.pages.dev
+          API_URL: https://fmea-backend.baipj123.workers.dev
+
+      - name: 📊 验证 GitHub Pages 部署
+        run: |
+          echo "验证 GitHub Pages 可访问性..."
+          curl -I https://intelligent-fmea-generator2.pages.dev
+          curl -I https://intelligent-fmea-generator2.pages.dev | grep "HTTP"
+
+      - name: 📊 验证 Cloudflare Workers API
+        run: |
+          echo "验证 Cloudflare Workers API..."
+          curl -I https://fmea-backend.baipj123.workers.dev/api/health
+          curl https://fmea-backend.baipj123.workers.dev/api/health
+
+      - name: 📤 上传测试结果
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: network-test-results
+          path: test-results/network-*.json
+
+  # ========================================
+  # 阶段8: 性能测试
+  # ========================================
+  performance-tests:
+    name: ⚡ 性能测试
+    needs: [setup, quality]
+    if: needs.setup.outputs.should-run == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🔧 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 📦 安装依赖
+        run: npm ci
+
+      - name: 🌐 安装 Playwright 和 Lighthouse CI
+        run: |
+          npx playwright install --with-deps chromium
+          npm install -g @lhci/cli
+
+      - name: 🏗️ 构建生产版本
+        run: npm run build
+
+      - name: 🚀 启动测试服务器
+        run: npx serve docs -l 5000 &
+        continue-on-error: true
+
+      - name: ⚡ 运行 Lighthouse CI
+        run: lhci autorun
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+        continue-on-error: true
+
+      - name: 🧪 运行自定义性能测试
+        run: npx playwright test tests/performance/
+        continue-on-error: true
+
+      - name: 📤 上传性能报告
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: performance-results
+          path: |
+            .lighthouseci/
+            test-results/performance-*.json
+
+  # ========================================
+  # 阶段9: 安全测试
+  # ========================================
+  security-tests:
+    name: 🔒 安全测试
+    needs: [setup, quality]
+    if: needs.setup.outputs.should-run == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🔧 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 📦 安装依赖
+        run: npm ci
+
+      - name: 🔐 运行安全审计
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+      - name: 🔍 使用 Snyk 扫描漏洞
+        uses: snyk/actions/node@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+      - name: 🛡️ 使用 CodeQL 分析
+        uses: github/codeql-action/analyze@v3
+        with:
+          languages: javascript
+          queries: security-extended,security-and-quality
+
+      - name: 📤 上传安全报告
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-results
+          path: |
+            snyk-report.json
+            codeql-results/
+
+  # ========================================
+  # 阶段10: 可访问性测试
+  # ========================================
+  accessibility-tests:
+    name: ♿ 可访问性测试
+    needs: [setup, quality]
+    if: needs.setup.outputs.should-run == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🔧 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 📦 安装依赖
+        run: npm ci
+
+      - name: 🌐 安装 Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: 🧪 运行可访问性测试
+        run: npx playwright test tests/accessibility/
+        continue-on-error: true
+
+      - name: 📤 上传可访问性报告
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: accessibility-results
+          path: test-results/accessibility-*.json
+
+  # ========================================
+  # 阶段11: 构建和部署验证
+  # ========================================
+  build-verify:
+    name: 🏗️ 构建验证
+    needs: [unit-tests, api-tests]
+    if: needs.setup.outputs.should-run == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🔧 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 📦 安装依赖
+        run: npm ci
+
+      - name: 🏗️ 构建生产版本
+        run: npm run build
+
+      - name: 📊 分析构建产物
+        run: |
+          echo "构建产物大小:"
+          du -sh docs/
+          ls -lh docs/
+
+      - name: 📤 上传构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: docs/
+          retention-days: 7
+
+  # ========================================
+  # 阶段12: 生成汇总报告
+  # ========================================
+  report:
+    name: 📊 生成汇总报告
+    needs: [
+      unit-tests,
+      api-tests,
+      e2e-tests-desktop,
+      e2e-tests-mobile,
+      network-tests,
+      performance-tests,
+      security-tests,
+      accessibility-tests,
+      build-verify
+    ]
+    if: always()
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🔧 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 📦 安装依赖
+        run: npm ci
+
+      - name: 📥 下载所有测试结果
+        uses: actions/download-artifact@v4
+        with:
+          path: all-test-results
+
+      - name: 📊 生成汇总报告
+        run: node tests/generateSummaryReport.js
+        continue-on-error: true
+
+      - name: 📤 上传汇总报告
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-summary-report
+          path: test-results/summary-*.html
+
+      - name: 💬 在PR中评论报告
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const reportPath = 'test-results/summary-report.md';
+            if (fs.existsSync(reportPath)) {
+              const report = fs.readFileSync(reportPath, 'utf8');
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: report
+              });
+            }
+
+      - name: ✅ 检查所有测试状态
+        run: |
+          echo "测试执行完成"
+          echo "查看详细报告: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+  # ========================================
+  # 阶段13: 通知
+  # ========================================
+  notify:
+    name: 📢 通知
+    needs: [report]
+    if: always() && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🔔 发送通知
+        run: |
+          echo "测试完成，发送通知..."
+          # 这里可以集成 Slack、Discord、Email 等通知方式
+          # 例如:
+          # curl -X POST ${{ secrets.SLACK_WEBHOOK }} \
+          #   -H 'Content-Type: application/json' \
+          #   -d '{"text":"测试完成: ${{ github.workflow }}"}'

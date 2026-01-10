@@ -1,0 +1,56 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e4]:
+  - complementary [ref=e5]:
+    - generic [ref=e6]:
+      - img [ref=e7]
+      - generic [ref=e19]: FMEA Genius
+    - navigation [ref=e20]:
+      - button "DFMEA 设计失效模式分析" [ref=e21] [cursor=pointer]:
+        - img [ref=e22]
+        - generic [ref=e25]:
+          - generic [ref=e26]: DFMEA
+          - generic [ref=e27]: 设计失效模式分析
+      - button "PFMEA 过程失效模式分析" [ref=e28] [cursor=pointer]:
+        - img [ref=e29]
+        - generic [ref=e31]:
+          - generic [ref=e32]: PFMEA
+          - generic [ref=e33]: 过程失效模式分析
+      - button "DFMEA 准则 SOD 及 AP 评分标准" [ref=e35] [cursor=pointer]:
+        - img [ref=e36]
+        - generic [ref=e38]:
+          - generic [ref=e39]: DFMEA 准则
+          - generic [ref=e40]: SOD 及 AP 评分标准
+      - button "PFMEA 准则 SOD 及 AP 评分标准" [ref=e41] [cursor=pointer]:
+        - img [ref=e42]
+        - generic [ref=e44]:
+          - generic [ref=e45]: PFMEA 准则
+          - generic [ref=e46]: SOD 及 AP 评分标准
+      - button "留言板 反馈与沟通" [ref=e48] [cursor=pointer]:
+        - img [ref=e49]
+        - generic [ref=e51]:
+          - generic [ref=e52]: 留言板
+          - generic [ref=e53]: 反馈与沟通
+      - button "AI API 设置 配置服务商与 Key" [ref=e54] [cursor=pointer]:
+        - img [ref=e55]
+        - generic [ref=e58]:
+          - generic [ref=e59]: AI API 设置
+          - generic [ref=e60]: 配置服务商与 Key
+      - button "项目协作 团队协作与版本管理" [active] [ref=e61] [cursor=pointer]:
+        - img [ref=e62]
+        - generic [ref=e67]:
+          - generic [ref=e68]: 项目协作
+          - generic [ref=e69]: 团队协作与版本管理
+    - generic [ref=e70]:
+      - generic [ref=e71]: Powered by Gemini
+      - generic [ref=e72]: "Standard: AIAG & VDA FMEA 1.0"
+      - generic [ref=e73]:
+        - generic [ref=e74]: 设计联系方式 / 微信：
+        - generic [ref=e75]: jasonbai 13510420462
+        - generic [ref=e76]: © 版权归 Jasonbai 老师所有
+  - main [ref=e77]:
+    - generic [ref=e79]:
+      - generic [ref=e80]: 协作功能需要后端支持
+      - generic [ref=e81]: 当前为单机模式，可以直接使用FMEA生成功能
+```
