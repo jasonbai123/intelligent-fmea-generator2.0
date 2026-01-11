@@ -93,21 +93,51 @@ const getSystemInstruction = (type: FmeaType) => {
        - **${isDfmea ? 'S4 原因（设计缺陷）' : 'S4 原因（过程变量）'}** -> 导致 -> **S4 失效模式（产品不合格）** -> 导致 -> **S4 后果（对最终用户/工厂的影响）**。
 
     ${!isDfmea ? `
-    3. **PFMEA 特定结构（步骤3和4强制要求）**：
-       - **s3_func_item（过程项目功能）**：必须使用以下格式描述三个层次的功能：
-         *格式*："工厂内部: [内部功能]\\n下游工厂: [发货至功能]\\n最终用户: [车辆功能]"
-         *示例*："工厂内部: 将轴安装至壳体\\n下游工厂: 将电机安装至车门\\n最终用户: 升降车窗"
+    3. **PFMEA 过程流程图结构（最关键 - 严格遵守）**：
 
-       - **s4_effect（失效后果）**：必须使用以下格式描述三个层次的后果：
-         *格式*："工厂内部: [内部后果]\\n下游工厂: [发货至后果]\\n最终用户: [最终用户后果]"
-         *示例*："工厂内部: 无法安装，线体停工\\n下游工厂: 无法装配到车门\\n最终用户: 车窗无法升降，丧失功能"
+       ⚠️ **必须按照制造过程流程图来生成数据！**
 
-       - **s3_func_element（工作要素功能）**：必须描述4M要素（机器/人员等）的功能。
-         *示例*："机器: 提供恒定压力将轴承压入"
+       PFMEA 必须反映实际的制造过程步骤，每个步骤对应流程图中的一个操作：
+
+       **步骤2（过程项目）**：
+       - **s2_item（项目）**：具体的零件/组件名称
+       - **s2_step（过程步骤/操作）**：按照流程图顺序的制造工序
+         *示例*："上料"、"定位夹紧"、"机械加工"、"检测"、"下料"
+       - **s2_element（工作要素）**：该步骤中的具体操作要素
+
+       **步骤3（功能要求）**：
+       - **s3_func_item（过程项目功能）**：该工序对产品实现的功能，必须包含三个层次：
+         *格式*："工厂内部: [本工序功能]\\n下游工厂: [对下工序的价值]\\n最终用户: [最终产品功能]"
+         *示例*："工厂内部: 将轴承压入壳体至规定深度\\n下游工厂: 提供可装配的组件\\n最终用户: 确保车窗正常升降"
+
+       - **s3_func_step（过程步骤功能）**：该操作步骤要达成的目标
+         *示例*："提供稳定的压入力，确保轴承位置准确"
+
+       - **s3_func_element（工作要素功能）**：4M要素（人机料法）的功能
+         *示例*："机器: 液压机提供压力；工装: 夹具保证位置"
+
+       **步骤4（失效信息）**：
+       - **s4_effect（失效后果）**：必须包含三个层次
+         *格式*："工厂内部: [本工序后果]\\n下游工厂: [影响下工序]\\n最终用户: [最终产品后果]"
+         *示例*："工厂内部: 轴承位置偏移，需要返工\\n下游工厂: 无法装配，线体停工\\n最终用户: 车窗异响，功能失效"
+
+       - **s4_mode（失效模式）**：该工序可能出现的产品缺陷
+         *示例*："轴承压入深度不足"、"位置偏移"、"压入力过大"
+
+       - **s4_cause（失效原因）**：导致缺陷的过程变量（4M）
+         *示例*："气压不足（机器）"、"工装磨损（材料）"、"操作员失误（人员）"
+
+       **步骤5（现行控制）**：
+       - **s5_prev_control（现行预防控制）**：防止失效原因发生的措施
+         *PFMEA重点*：防错装置、定期维护、工艺参数控制
+       - **s5_det_control（现行探测控制）**：探测失效模式的方法
+         *PFMEA重点*：在线检测、自动测量、统计过程控制
+
     ` : `
     3. **DFMEA 特定结构**：
-       - **s3_func_item**：描述系统/子系统的高层次功能。
-       - **s4_effect**：描述对最终用户和法规合规性的影响。
+       - **s2_item/s2_step/s2_element**：系统 → 子系统 → 组件
+       - **s3_func_item**：描述系统/子系统的高层次功能
+       - **s4_effect**：描述对最终用户和法规合规性的影响
     `}
 
     4. **真实控制措施（步骤5）**：
@@ -480,7 +510,24 @@ const generateWithGemini = async (request: GenerationRequest, apiKey?: string, m
 
   const systemInstruction = getSystemInstruction(request.type);
 
-  const parts: any[] = [{ text: request.textContext }];
+  // 为 PFMEA 添加明确的前缀说明
+  let userPrompt = request.textContext;
+  if (request.type === FmeaType.PFMEA) {
+    userPrompt = `【PFMEA 要求 - 必须按照过程流程图生成】
+
+请基于以下制造过程描述，生成 PFMEA 报告。
+
+⚠️ 关键要求：
+1. 必须按照**制造过程流程图**的工序顺序来生成
+2. 每一行数据对应流程图中的一个操作步骤
+3. s2_step 字段必须包含具体的制造工序名称（如：上料、加工、检测、装配等）
+4. s3_func_item 必须描述该工序的功能（包含工厂内部/下游工厂/最终用户三个层次）
+5. s4_cause 必须分析4M要素（人机料法）
+
+${request.textContext}`;
+  }
+
+  const parts: any[] = [{ text: userPrompt }];
   if (request.imageBase64 && request.mimeType) {
     parts.push({
       inlineData: {
@@ -619,9 +666,26 @@ const generateWithOpenAICompatible = async (request: GenerationRequest, provider
     Ensure you generate a MASSIVE amount of rows (50+) by being extremely detailed.
   `;
 
+  // 为 PFMEA 添加明确的前缀说明
+  let userPrompt = request.textContext;
+  if (request.type === FmeaType.PFMEA) {
+    userPrompt = `【PFMEA 要求 - 必须按照过程流程图生成】
+
+请基于以下制造过程描述，生成 PFMEA 报告。
+
+⚠️ 关键要求：
+1. 必须按照**制造过程流程图**的工序顺序来生成
+2. 每一行数据对应流程图中的一个操作步骤
+3. s2_step 字段必须包含具体的制造工序名称（如：上料、加工、检测、装配等）
+4. s3_func_item 必须描述该工序的功能（包含工厂内部/下游工厂/最终用户三个层次）
+5. s4_cause 必须分析4M要素（人机料法）
+
+${request.textContext}`;
+  }
+
   const messages: any[] = [
     { role: "system", content: systemInstruction },
-    { role: "user", content: request.textContext }
+    { role: "user", content: userPrompt }
   ];
 
   // Note: Most standard OpenAI-compatible endpoints strictly accept text in 'content'.
