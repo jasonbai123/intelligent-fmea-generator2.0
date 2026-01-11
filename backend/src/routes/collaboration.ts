@@ -1,5 +1,5 @@
 import express from 'express';
-import { db } from '../utils/db';
+import KVDB from '../utils/db';
 import {
   CreateProjectRequest,
   UpdateProjectRequest,
@@ -12,6 +12,8 @@ import {
   ProjectStatus,
   CommentType
 } from '../types';
+
+const db = new KVDB(null as any);
 
 const router = express.Router();
 
@@ -543,7 +545,7 @@ router.put('/projects/:id/comments/:commentId', (req, res) => {
     }
 
     const comments = db.getProjectComments(id);
-    const updatedComment = comments.find(c => c.id === commentId);
+    const updatedComment = comments.find((c: Comment) => c.id === commentId);
     return res.status(200).json(updatedComment);
   } catch (error) {
     console.error('更新评论失败:', error);
@@ -622,7 +624,7 @@ router.post('/projects/:id/comments/:commentId/replies', (req, res) => {
     }
 
     const comments = db.getProjectComments(id);
-    const updatedComment = comments.find(c => c.id === commentId);
+    const updatedComment = comments.find((c: Comment) => c.id === commentId);
     return res.status(201).json(updatedComment);
   } catch (error) {
     console.error('添加回复失败:', error);

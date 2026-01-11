@@ -1,7 +1,9 @@
 import express from 'express';
-import { db } from '../utils/db';
+import KVDB from '../utils/db';
 import { generateVerificationCode } from '../utils/codeGenerator';
 import { SendCodeRequest, LoginRequest, UserInfo, UserRole, AuthToken } from '../types';
+
+const db = new KVDB(null as any);
 
 const router = express.Router();
 
