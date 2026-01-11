@@ -20,7 +20,8 @@
       "Bash(wrangler deployments list:*)",
       "Bash(wrangler whoami:*)",
       "Bash(timeout:*)",
-      "Bash(wrangler deployments tail:*)"
+      "Bash(wrangler deployments tail:*)",
+      "Bash(npx wrangler pages deploy:*)"
     ]
   }
 }
