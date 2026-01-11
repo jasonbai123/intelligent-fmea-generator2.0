@@ -87,8 +87,13 @@ const App: React.FC = () => {
     // 🔴 临时：自动创建测试token（用于测试FMEA生成功能，无需后端API）
     const testToken: AuthToken = {
       token: 'test_token_' + Date.now(),
-      phone: '13800138000',
-      role: 'admin' as UserRole,
+      userInfo: {
+        id: 'test_user_001',
+        phone: '13800138000',
+        role: 'admin' as UserRole,
+        createdAt: Date.now(),
+        expiresAt: Date.now() + 15 * 24 * 60 * 60 * 1000 // 15天后过期
+      },
       expiresAt: Date.now() + 15 * 24 * 60 * 60 * 1000 // 15天后过期
     };
     localStorage.setItem('fmea_auth_token', JSON.stringify(testToken));
