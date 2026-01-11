@@ -114,9 +114,34 @@ const getSystemInstruction = (type: FmeaType) => {
        - **预防（PC）**：防错（Poka-Yoke）、导向销、PLC互锁。（不能只是"培训"）。
        - **探测（DC）**：相机视觉（AOI）、扭矩传感器、X射线。（不能只是"目视检查"）。
 
-    5. **步骤2和3完整性**：
+    5. **步骤2和3完整性（强制要求）**：
        - 确保步骤2和步骤3的所有列都已填充。不要留空"工作要素功能"或"过程项目功能"。
        - **必须填充的字段**：s2_item、s2_step、s2_element、s3_func_item、s3_func_step、s3_func_element、s4_mode、s4_cause、s4_effect、s5_ap、s5_pc、s5_dc等。
+
+    ================================================================
+    *** 关键警告（违反将导致数据被拒绝）***
+    ================================================================
+
+    ⚠️ **所有字段都必须有内容！禁止空字符串！**
+    - s2_item: 必须填写项目名称
+    - s2_step: 必须填写过程/系统步骤
+    - s2_element: 必须填写工作要素/组件
+    - s3_func_item: 必须填写完整的项目功能描述
+    - s3_func_step: 必须填写步骤的功能
+    - s3_func_element: 必须填写工作要素的功能
+    - s4_effect: 必须填写失效后果
+    - s4_severity: 必须填写1-10的整数
+    - s4_mode: 必须填写失效模式
+    - s4_cause: 必须填写失效原因
+    - s5_prev_control: 必须填写现行预防控制
+    - s5_occurrence: 必须填写1-10的整数
+    - s5_det_control: 必须填写现行探测控制
+    - s5_detection: 必须填写1-10的整数
+    - s5_ap: 必须填写H/M/L之一
+
+    ❌ **禁止输出空字符串""或null**
+    ❌ **禁止输出"未定义"、"待填写"、"N/A"等占位符**
+    ✅ **每个字段都必须有具体、专业的内容**
 
     ================================================================
     *** 输出格式 ***
@@ -124,6 +149,7 @@ const getSystemInstruction = (type: FmeaType) => {
     1. **语言**：仅使用专业简体中文（zh-CN）。
     2. **格式**：**严格RFC8259 JSON格式**。键名用双引号。无尾随逗号。
     3. **数量**：提供 **20+ 行高度详细的数据**。
+    4. **质量**：每行数据的所有字段都必须完整填充，不允许有空字段。
   `;
 };
 
@@ -195,6 +221,91 @@ const cleanAndParseJson = (text: string) => {
       throw new Error(`AI 返回的数据格式有误，且无法自动修复 (JSON Parse Error)。\n可能原因：生成内容过长导致截断位置特殊。\n结尾片段: ...${snippet}`);
     }
   }
+};
+
+// --- HELPER: ENSURE ALL FIELDS ARE POPULATED ---
+const ensureFieldsPopulated = (rows: any[], type: FmeaType): any[] => {
+  return rows.map((row, index) => {
+    // Helper to get a value or provide a default
+    const getValue = (value: any, defaultValue: any) => {
+      if (value === undefined || value === null || value === "") {
+        console.warn(`Empty field detected, using default: ${defaultValue}`);
+        return defaultValue;
+      }
+      return value;
+    };
+
+    // Helper to get function description based on type
+    const getFunctionDefault = (fieldType: string, rowIndex: number) => {
+      const rowNum = rowIndex + 1;
+      switch(fieldType) {
+        case 's2_item':
+          return type === FmeaType.DFMEA ? `系统组件 ${rowNum}` : `过程项目 ${rowNum}`;
+        case 's2_step':
+          return type === FmeaType.DFMEA ? `设计步骤 ${rowNum}` : `制造步骤 ${rowNum}`;
+        case 's2_element':
+          return type === FmeaType.DFMEA ? `子系统 ${rowNum}` : `工作要素 ${rowNum}`;
+        case 's3_func_item':
+          return type === FmeaType.DFMEA
+            ? `系统级功能：实现核心功能需求 ${rowNum}`
+            : `工厂内部: 完成工序${rowNum}\n下游工厂: 为下游提供组件\n最终用户: 满足最终用户功能需求`;
+        case 's3_func_step':
+          return `步骤${rowNum}的功能：执行关键操作`;
+        case 's3_func_element':
+          return type === FmeaType.DFMEA
+            ? `组件${rowNum}的功能：提供关键性能`
+            : `工作要素${rowNum}的功能：确保过程稳定`;
+        case 's4_effect':
+          return `失效后果：功能部分或完全丧失\n工厂内部: 需要返工或报废\n下游工厂: 影响后续工序\n最终用户: 产品性能下降，客户不满`;
+        case 's5_prev_control':
+          return type === FmeaType.DFMEA ? '设计验证' : '过程防错';
+        case 's5_det_control':
+          return type === FmeaType.DFMEA ? '仿真分析' : '自动检测';
+        default:
+          return `待定义${rowNum}`;
+      }
+    };
+
+    return {
+      ...row,
+      // Step 2 fields (always required)
+      s2_item: getValue(row.s2_item, getFunctionDefault('s2_item', index)),
+      s2_step: getValue(row.s2_step, getFunctionDefault('s2_step', index)),
+      s2_element: getValue(row.s2_element, getFunctionDefault('s2_element', index)),
+
+      // Step 3 fields (always required)
+      s3_func_item: getValue(row.s3_func_item, getFunctionDefault('s3_func_item', index)),
+      s3_func_step: getValue(row.s3_func_step, getFunctionDefault('s3_func_step', index)),
+      s3_func_element: getValue(row.s3_func_element, getFunctionDefault('s3_func_element', index)),
+
+      // Step 4 fields (always required)
+      s4_effect: getValue(row.s4_effect, getFunctionDefault('s4_effect', index)),
+      s4_severity: getValue(row.s4_severity, 5),
+      s4_mode: getValue(row.s4_mode, `失效模式${index + 1}`),
+      s4_cause: getValue(row.s4_cause, `潜在原因${index + 1}`),
+
+      // Step 5 fields (always required)
+      s5_prev_control: getValue(row.s5_prev_control, getFunctionDefault('s5_prev_control', index)),
+      s5_occurrence: getValue(row.s5_occurrence, 5),
+      s5_det_control: getValue(row.s5_det_control, getFunctionDefault('s5_det_control', index)),
+      s5_detection: getValue(row.s5_detection, 5),
+      s5_ap: getValue(row.s5_ap, 'M'),
+
+      // Step 6 fields (optional, but provide defaults if empty)
+      s6_status: getValue(row.s6_status, 'Open'),
+      s6_prev_action: getValue(row.s6_prev_action, ''),
+      s6_det_action: getValue(row.s6_det_action, ''),
+      s6_resp_person: getValue(row.s6_resp_person, ''),
+      s6_target_date: getValue(row.s6_target_date, ''),
+      s6_action_taken: getValue(row.s6_action_taken, ''),
+      s6_completion_date: getValue(row.s6_completion_date, ''),
+      s6_severity_new: getValue(row.s6_severity_new, row.s4_severity || 5),
+      s6_occurrence_new: getValue(row.s6_occurrence_new, row.s5_occurrence || 5),
+      s6_detection_new: getValue(row.s6_detection_new, row.s5_detection || 5),
+      s6_ap_new: getValue(row.s6_ap_new, row.s5_ap || 'M'),
+      remarks: getValue(row.remarks, ''),
+    };
+  });
 };
 
 // --- MOCK DATA GENERATOR (无API密钥时的模拟模式) ---
@@ -747,8 +858,11 @@ export const generateFmeaAnalysis = async (request: GenerationRequest): Promise<
 
     // Use robust parser instead of simple parse
     const jsonResult = cleanAndParseJson(jsonText);
-    
-    const rowsWithIds = (jsonResult.rows || []).map((row: any, index: number) => ({
+
+    // Ensure all fields are populated (no empty fields)
+    const rowsWithValidatedFields = ensureFieldsPopulated(jsonResult.rows || [], request.type);
+
+    const rowsWithIds = rowsWithValidatedFields.map((row: any, index: number) => ({
       ...row,
       id: `row-${Date.now()}-${index}`,
     }));
