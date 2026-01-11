@@ -1,23 +1,27 @@
 import React, { useState, useRef, useEffect } from 'react';
 import * as XLSX from 'xlsx';
-import { 
-  FileText, 
-  Settings, 
-  Upload, 
-  Zap, 
-  Loader2, 
-  Image as ImageIcon, 
-  XCircle, 
-  BrainCircuit, 
-  FileSpreadsheet, 
-  BookOpen, 
-  Server, 
+import {
+  FileText,
+  Settings,
+  Upload,
+  Zap,
+  Loader2,
+  Image as ImageIcon,
+  XCircle,
+  BrainCircuit,
+  FileSpreadsheet,
+  BookOpen,
+  Server,
   MessageSquareText,
   Users
 } from 'lucide-react';
 import { FmeaType, FmeaAnalysisResult, AiSettings, DEFAULT_AI_SETTINGS, ChatMessage, ChatRole, AuthToken, UserRole } from './types';
 import { generateFmeaAnalysis, updateFmeaViaChat } from './services/backendAiService';
 import { API_ENDPOINTS } from './config/api';
+
+// 强制刷新缓存 - 版本: 2025-01-11 19:20
+// Force cache refresh to ensure users get latest version with Chinese prompts
+// Build timestamp: 2025-01-11T19:20:00+08:00
 import { FmeaTable } from './components/FmeaTable';
 import { DfmeaCriteria } from './components/DfmeaCriteria';
 import { PfmeaCriteria } from './components/PfmeaCriteria';
