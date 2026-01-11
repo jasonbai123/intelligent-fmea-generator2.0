@@ -276,6 +276,130 @@ const callDeepSeek = async (messages: any[], settings: AiSettings) => {
 };
 
 /**
+ * 直接调用 Google Gemini API
+ */
+const callGemini = async (messages: any[], settings: AiSettings) => {
+  const modelName = settings.modelName || 'gemini-2.0-flash';
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${settings.apiKey}`;
+
+  const systemMessage = messages.find(m => m.role === 'system');
+  const userMessages = messages.filter(m => m.role !== 'system');
+
+  const requestBody = {
+    contents: userMessages.map(msg => ({
+      role: msg.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: msg.content }]
+    })),
+    systemInstruction: systemMessage ? { parts: [{ text: systemMessage.content }] } : undefined,
+    generationConfig: {
+      temperature: settings.temperature || 0.7,
+      maxOutputTokens: settings.maxTokens || 8192
+    }
+  };
+
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(requestBody)
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ message: response.statusText }));
+    throw new Error(`Gemini API错误 (${response.status}): ${JSON.stringify(errorData)}`);
+  }
+
+  const data = await response.json();
+
+  return {
+    content: data.candidates[0].content.parts[0].text,
+    usage: data.usageMetadata,
+    model: modelName
+  };
+};
+
+/**
+ * 直接调用 Anthropic Claude API
+ */
+const callClaude = async (messages: any[], settings: AiSettings) => {
+  const endpoint = 'https://api.anthropic.com/v1/messages';
+
+  const systemMessage = messages.find(m => m.role === 'system');
+  const chatMessages = messages.filter(m => m.role !== 'system');
+
+  const requestBody = {
+    model: settings.modelName || 'claude-3-5-sonnet-20241022',
+    max_tokens: settings.maxTokens || 8192,
+    system: systemMessage ? systemMessage.content : undefined,
+    messages: chatMessages.map(msg => ({
+      role: msg.role,
+      content: msg.content
+    })),
+    temperature: settings.temperature || 0.7
+  };
+
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': settings.apiKey,
+      'anthropic-version': '2023-06-01'
+    },
+    body: JSON.stringify(requestBody)
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ message: response.statusText }));
+    throw new Error(`Claude API错误 (${response.status}): ${JSON.stringify(errorData)}`);
+  }
+
+  const data = await response.json();
+
+  return {
+    content: data.content[0].text,
+    usage: data.usage,
+    model: data.model
+  };
+};
+
+/**
+ * 直接调用火山引擎豆包 API
+ */
+const callDoubao = async (messages: any[], settings: AiSettings) => {
+  const endpoint = `${settings.baseUrl || 'https://ark.cn-beijing.volces.com/api/v3'}/chat/completions`;
+
+  const requestBody = {
+    model: settings.modelName || 'doubao-pro-32k',
+    messages: messages,
+    temperature: settings.temperature || 0.7,
+    max_tokens: settings.maxTokens || 8192
+  };
+
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${settings.apiKey}`
+    },
+    body: JSON.stringify(requestBody)
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ message: response.statusText }));
+    throw new Error(`豆包 API错误 (${response.status}): ${JSON.stringify(errorData)}`);
+  }
+
+  const data = await response.json();
+
+  return {
+    content: data.choices[0].message.content,
+    usage: data.usage,
+    model: data.model
+  };
+};
+
+/**
  * 前端直接调用 AI 服务生成 FMEA 分析
  */
 export const generateFmeaAnalysisDirect = async (request: GenerationRequest): Promise<FmeaAnalysisResult> => {
@@ -297,6 +421,18 @@ export const generateFmeaAnalysisDirect = async (request: GenerationRequest): Pr
 
   try {
     switch (provider) {
+      case AiProvider.GEMINI:
+        result = await callGemini(messages, settings);
+        break;
+
+      case AiProvider.CLAUDE:
+        result = await callClaude(messages, settings);
+        break;
+
+      case AiProvider.DOUBAO:
+        result = await callDoubao(messages, settings);
+        break;
+
       case AiProvider.ZHIPU:
         result = await callZhipuAI(messages, settings);
         break;
@@ -310,7 +446,7 @@ export const generateFmeaAnalysisDirect = async (request: GenerationRequest): Pr
         break;
 
       default:
-        throw new Error(`暂不支持直接调用 ${provider}，请使用后端服务`);
+        throw new Error(`暂不支持直接调用 ${provider}`);
     }
 
     if (!result || !result.content) {
@@ -373,6 +509,18 @@ export const updateFmeaViaChatDirect = async (
 
   try {
     switch (settings.provider) {
+      case AiProvider.GEMINI:
+        result = await callGemini(messages, settings);
+        break;
+
+      case AiProvider.CLAUDE:
+        result = await callClaude(messages, settings);
+        break;
+
+      case AiProvider.DOUBAO:
+        result = await callDoubao(messages, settings);
+        break;
+
       case AiProvider.ZHIPU:
         result = await callZhipuAI(messages, settings);
         break;

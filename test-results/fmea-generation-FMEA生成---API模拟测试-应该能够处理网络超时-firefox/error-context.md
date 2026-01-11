@@ -1,0 +1,80 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e4]:
+  - complementary [ref=e5]:
+    - generic [ref=e6]:
+      - img [ref=e7]
+      - generic [ref=e21]: FMEA Genius
+    - navigation [ref=e22]:
+      - button "DFMEA 设计失效模式分析" [active] [ref=e23] [cursor=pointer]:
+        - img [ref=e24]
+        - generic [ref=e27]:
+          - generic [ref=e28]: DFMEA
+          - generic [ref=e29]: 设计失效模式分析
+      - button "PFMEA 过程失效模式分析" [ref=e30] [cursor=pointer]:
+        - img [ref=e31]
+        - generic [ref=e33]:
+          - generic [ref=e34]: PFMEA
+          - generic [ref=e35]: 过程失效模式分析
+      - button "DFMEA 准则 SOD 及 AP 评分标准" [ref=e37] [cursor=pointer]:
+        - img [ref=e38]
+        - generic [ref=e41]:
+          - generic [ref=e42]: DFMEA 准则
+          - generic [ref=e43]: SOD 及 AP 评分标准
+      - button "PFMEA 准则 SOD 及 AP 评分标准" [ref=e44] [cursor=pointer]:
+        - img [ref=e45]
+        - generic [ref=e48]:
+          - generic [ref=e49]: PFMEA 准则
+          - generic [ref=e50]: SOD 及 AP 评分标准
+      - button "留言板 反馈与沟通" [ref=e52] [cursor=pointer]:
+        - img [ref=e53]
+        - generic [ref=e58]:
+          - generic [ref=e59]: 留言板
+          - generic [ref=e60]: 反馈与沟通
+      - button "AI API 设置 配置服务商与 Key" [ref=e61] [cursor=pointer]:
+        - img [ref=e62]
+        - generic [ref=e67]:
+          - generic [ref=e68]: AI API 设置
+          - generic [ref=e69]: 配置服务商与 Key
+      - button "项目协作 团队协作与版本管理" [ref=e70] [cursor=pointer]:
+        - img [ref=e71]
+        - generic [ref=e76]:
+          - generic [ref=e77]: 项目协作
+          - generic [ref=e78]: 团队协作与版本管理
+    - generic [ref=e79]:
+      - generic [ref=e80]: Powered by Gemini
+      - generic [ref=e81]: "Standard: AIAG & VDA FMEA 1.0"
+      - generic [ref=e82]:
+        - generic [ref=e83]: 设计联系方式 / 微信：
+        - generic [ref=e84]: jasonbai 13510420462
+        - generic [ref=e85]: © 版权归 Jasonbai 老师所有
+  - main [ref=e86]:
+    - generic [ref=e88]:
+      - generic [ref=e89]:
+        - generic [ref=e90]:
+          - heading "设计 FMEA 生成器" [level=1] [ref=e91]
+          - generic [ref=e92]: AIAG & VDA 1.0
+        - paragraph [ref=e93]: 上传产品BOM、总成图纸或输入结构描述，自动生成符合 AIAG-VDA 标准的 DFMEA 报告（包含 AP 分析）。
+      - generic [ref=e94]:
+        - generic [ref=e95]:
+          - generic [ref=e96]:
+            - generic [ref=e97]:
+              - img [ref=e98]
+              - text: BOM / 产品结构描述
+            - button "导入 Excel" [ref=e104] [cursor=pointer]:
+              - img [ref=e105]
+              - text: 导入 Excel
+          - textbox "例如：电动牙刷动力总成，包含：微型电机 (DC 3.7V)、传动轴（不锈钢）、偏心轮（铜合金）、减震橡胶圈... (支持导入 Excel BOM)" [ref=e112]
+        - generic [ref=e113]:
+          - generic [ref=e114]:
+            - img [ref=e115]
+            - text: 上传总成图纸 / 爆炸图 (PDF/图片)
+          - generic [ref=e119]:
+            - generic [ref=e120]:
+              - img [ref=e122]
+              - paragraph [ref=e126]: 点击上传文件
+              - paragraph [ref=e127]: 支持 PDF, PNG, JPG, WEBP
+            - button "Choose File" [ref=e128] [cursor=pointer]
+      - button "开始生成分析报告" [ref=e130] [cursor=pointer]
+```

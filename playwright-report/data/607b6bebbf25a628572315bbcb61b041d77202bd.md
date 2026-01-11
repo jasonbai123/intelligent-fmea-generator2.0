@@ -1,0 +1,115 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e4]:
+  - complementary [ref=e5]:
+    - generic [ref=e6]:
+      - img [ref=e7]
+      - generic [ref=e19]: FMEA Genius
+    - navigation [ref=e20]:
+      - button "DFMEA 设计失效模式分析" [ref=e21] [cursor=pointer]:
+        - img [ref=e22]
+        - generic [ref=e25]:
+          - generic [ref=e26]: DFMEA
+          - generic [ref=e27]: 设计失效模式分析
+      - button "PFMEA 过程失效模式分析" [ref=e28] [cursor=pointer]:
+        - img [ref=e29]
+        - generic [ref=e31]:
+          - generic [ref=e32]: PFMEA
+          - generic [ref=e33]: 过程失效模式分析
+      - button "DFMEA 准则 SOD 及 AP 评分标准" [ref=e35] [cursor=pointer]:
+        - img [ref=e36]
+        - generic [ref=e38]:
+          - generic [ref=e39]: DFMEA 准则
+          - generic [ref=e40]: SOD 及 AP 评分标准
+      - button "PFMEA 准则 SOD 及 AP 评分标准" [ref=e41] [cursor=pointer]:
+        - img [ref=e42]
+        - generic [ref=e44]:
+          - generic [ref=e45]: PFMEA 准则
+          - generic [ref=e46]: SOD 及 AP 评分标准
+      - button "留言板 反馈与沟通" [ref=e48] [cursor=pointer]:
+        - img [ref=e49]
+        - generic [ref=e51]:
+          - generic [ref=e52]: 留言板
+          - generic [ref=e53]: 反馈与沟通
+      - button "AI API 设置 配置服务商与 Key" [ref=e54] [cursor=pointer]:
+        - img [ref=e55]
+        - generic [ref=e58]:
+          - generic [ref=e59]: AI API 设置
+          - generic [ref=e60]: 配置服务商与 Key
+      - button "项目协作 团队协作与版本管理" [ref=e61] [cursor=pointer]:
+        - img [ref=e62]
+        - generic [ref=e67]:
+          - generic [ref=e68]: 项目协作
+          - generic [ref=e69]: 团队协作与版本管理
+    - generic [ref=e70]:
+      - generic [ref=e71]: Powered by Gemini
+      - generic [ref=e72]: "Standard: AIAG & VDA FMEA 1.0"
+      - generic [ref=e73]:
+        - generic [ref=e74]: 设计联系方式 / 微信：
+        - generic [ref=e75]: jasonbai 13510420462
+        - generic [ref=e76]: © 版权归 Jasonbai 老师所有
+  - main [ref=e77]:
+    - generic [ref=e79]:
+      - generic [ref=e80]:
+        - heading "AI API 设置" [level=2] [ref=e81]:
+          - img [ref=e82]
+          - text: AI API 设置
+        - paragraph [ref=e85]: 配置用于生成 FMEA 报告的 AI 模型服务商。支持主流的大模型 API。
+      - generic [ref=e86]:
+        - generic [ref=e87]:
+          - generic [ref=e88]: 选择AI服务商
+          - generic [ref=e89]:
+            - button "Google Gemini Google 的多模态大语言模型，支持文本和图像输入" [ref=e90] [cursor=pointer]:
+              - generic [ref=e93]: Google Gemini
+              - paragraph [ref=e94]: Google 的多模态大语言模型，支持文本和图像输入
+            - button "DeepSeek (深度求索) 深度求索的中文优化大模型" [ref=e95] [cursor=pointer]:
+              - generic [ref=e98]: DeepSeek (深度求索)
+              - paragraph [ref=e99]: 深度求索的中文优化大模型
+            - button "智谱 AI (GLM) 智谱AI的GLM系列大模型" [ref=e100] [cursor=pointer]:
+              - generic [ref=e103]: 智谱 AI (GLM)
+              - paragraph [ref=e104]: 智谱AI的GLM系列大模型
+            - button "硅基流动 (SiliconFlow) 硅基流动的AI服务平台" [ref=e105] [cursor=pointer]:
+              - generic [ref=e108]: 硅基流动 (SiliconFlow)
+              - paragraph [ref=e109]: 硅基流动的AI服务平台
+            - button "火山引擎 (豆包) 字节跳动的AI大模型" [ref=e110] [cursor=pointer]:
+              - generic [ref=e113]: 火山引擎 (豆包)
+              - paragraph [ref=e114]: 字节跳动的AI大模型
+            - button "Anthropic (Claude) Anthropic的Claude系列大模型" [ref=e115] [cursor=pointer]:
+              - generic [ref=e118]: Anthropic (Claude)
+              - paragraph [ref=e119]: Anthropic的Claude系列大模型
+        - generic [ref=e120]:
+          - generic [ref=e121]:
+            - img [ref=e122]
+            - text: 模型名称
+          - combobox [ref=e126]:
+            - option "Gemini 2.5 Pro (最新推荐)" [selected]
+            - option "Gemini 2.5 Flash Exp"
+            - option "Gemini 2.0 Flash (快速)"
+            - option "Gemini 1.5 Pro"
+            - option "Gemini 1.5 Flash"
+            - option "Gemini Pro (通用)"
+            - option "Gemini Flash (快速)"
+            - option "自定义 (Custom)..."
+            - option "自定义 (Custom)..."
+          - paragraph [ref=e127]: "当前选择: gemini-2.5-pro-preview-03625"
+        - generic [ref=e128]:
+          - generic [ref=e129]:
+            - img [ref=e130]
+            - text: API 密钥
+          - textbox "输入您的 Gemini API 密钥（可选）" [ref=e133]
+          - paragraph [ref=e134]:
+            - text: 💡
+            - strong [ref=e135]: 前端直接调用模式：
+          - list [ref=e136]:
+            - listitem [ref=e137]: 输入API密钥后，前端将直接调用Google Gemini API
+            - listitem [ref=e138]: 不需要后端服务支持
+            - listitem [ref=e139]: API密钥存储在浏览器本地，不会发送到服务器
+        - generic [ref=e140]:
+          - button "重置默认" [active] [ref=e141] [cursor=pointer]:
+            - img [ref=e142]
+            - text: 重置默认
+          - button "保存设置" [ref=e145] [cursor=pointer]:
+            - img [ref=e146]
+            - text: 保存设置
+```

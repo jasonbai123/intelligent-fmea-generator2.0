@@ -1,6 +1,13 @@
 name = "fmea-backend"
-main = "src/index.js"
+main = "src/index.ts"
 compatibility_date = "2024-12-01"
+
+# 环境变量配置
+[vars]
+# 这些变量通过Cloudflare Dashboard配置
+# DEEPSEEK_API_KEY = ""
+# SILICONFLOW_API_KEY = ""
+# ZHIPU_API_KEY = ""
 
 [[kv_namespaces]]
 binding = "FMEA_DATA"

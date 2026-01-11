@@ -3,6 +3,28 @@ import AuthHandlers from './handlers/auth';
 import CollaborationHandlers from './handlers/collaboration';
 import AIHandlers from './handlers/ai';
 
+const ALLOWED_ORIGINS = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:3000',
+  'https://intelligent-fmea-generator2.pages.dev'  // 生产环境
+];
+
+function getCorsHeaders(request) {
+  const origin = request.headers.get('Origin');
+  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  
+  return {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': allowedOrigin,
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Credentials': 'false',
+    'Access-Control-Max-Age': '86400'
+  };
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -11,12 +33,7 @@ export default {
     const collabHandlers = new CollaborationHandlers(db);
     const aiHandlers = new AIHandlers(env);
 
-    const headers = {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization'
-    };
+    const headers = getCorsHeaders(request);
 
     if (request.method === 'OPTIONS') {
       return new Response(null, { headers });
