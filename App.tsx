@@ -65,11 +65,13 @@ const App: React.FC = () => {
   // Load auth token from localStorage on mount
   useEffect(() => {
     const savedToken = localStorage.getItem('fmea_auth_token');
+
     if (savedToken) {
       try {
         const token: AuthToken = JSON.parse(savedToken);
         if (token.expiresAt > Date.now()) {
           setAuthToken(token);
+          return; // 如果有有效token，直接返回
         } else {
           localStorage.removeItem('fmea_auth_token');
         }
@@ -77,6 +79,17 @@ const App: React.FC = () => {
         console.error("Failed to parse auth token", e);
       }
     }
+
+    // 🔴 临时：自动创建测试token（用于测试FMEA生成功能，无需后端API）
+    const testToken: AuthToken = {
+      token: 'test_token_' + Date.now(),
+      phone: '13800138000',
+      role: 'admin' as UserRole,
+      expiresAt: Date.now() + 15 * 24 * 60 * 60 * 1000 // 15天后过期
+    };
+    localStorage.setItem('fmea_auth_token', JSON.stringify(testToken));
+    setAuthToken(testToken);
+    console.log('✅ 自动登录成功（测试模式）- 可以测试FMEA生成功能');
   }, []);
 
   const handleSendCode = async (phone: string) => {
