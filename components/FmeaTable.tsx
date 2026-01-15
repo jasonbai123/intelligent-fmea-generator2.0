@@ -99,15 +99,16 @@ export const FmeaTable: React.FC<FmeaTableProps> = ({ data }) => {
     },
     step3: {
       title: 'Step 3 - Functional Analysis (功能分析)',
-      col1: isDfmea 
-        ? '1. Next Higher Level Function\nand Requirement\n1.上一级功能及要求' 
+      col1: isDfmea
+        ? '1. Next Higher Level Function\nand Requirement\n1.上一较高级别功能及要求'
         : '1. Function of Process Item\n1.过程项的功能\nFunction of System, Subsystem, Part Element or Process\n系统、子系统、零件要素或过程的功能',
-      col2: isDfmea 
-        ? '2. Focus Element Function and\nRequirement\n2.关注要素功能及要求' 
+      col2: isDfmea
+        ? '2. Focus Element Function and\nRequirement\n2.关注要素功能及要求'
         : '2. Function of Process Step\n2.过程步骤的功能和产品特性\nFunction of Focus Element and Product Characteristic\n(Value/Attributes)\n(量值为可选顶)',
-      col3: isDfmea 
-        ? '3. Next Lower Level Function\nand Requirement\n3.下一级功能及要求' 
-        : '3. Function of Work Element\n3.过程工作要素的功能和过程特性\nFunction of Work Element and Process Characteristic\n过程工作要素的功能和过程特性',
+      // DFMEA 只有 2 列，PFMEA 有 3 列
+      ...(isDfmea ? {} : {
+        col3: '3. Function of Work Element\n3.过程工作要素的功能和过程特性\nFunction of Work Element and Process Characteristic\n过程工作要素的功能和过程特性',
+      })
     },
     step4: {
       title: 'Step 4 - Failure Analysis (失效分析)',
@@ -120,11 +121,21 @@ export const FmeaTable: React.FC<FmeaTableProps> = ({ data }) => {
     },
     step5: {
       title: 'Step 5 - Risk Analysis (风险分析)',
-      col1: 'Current Prevention Control (PC)\n当前失效起因的预防控制 (PC)',
-      col2: 'Occ.\n(O)',
-      col3: 'Current Detection Control (DC)\n对失效起因或失效模式的当前探测控制 (DC)',
+      col1: isDfmea
+        ? 'Current Prevention Controls (PC)\nof FC\n当前预防控制 (PC)'
+        : 'Current Prevention Control (PC)\n当前失效起因的预防控制 (PC)',
+      col2: isDfmea
+        ? 'Current Detection Controls (DC)\nof FC or FM\n当前探测控制 (DC)'
+        : 'Current Detection Control (DC)\n对失效起因或失效模式的当前探测控制 (DC)',
+      col3: 'Occ.\n(O)',
       col4: 'Det.\n(D)',
-      col5: 'AP',
+      ...(isDfmea ? {
+        col5: 'Severity\n(S)',
+        col6: 'RPN\n(O×D×S)',
+        col7: 'AP'
+      } : {
+        col5: 'AP'
+      })
     },
     step6: {
       title: 'Step 6 - Optimization (优化)',
@@ -176,21 +187,32 @@ export const FmeaTable: React.FC<FmeaTableProps> = ({ data }) => {
     // --- 2. COLUMNS SETUP ---
     // A: ID/History
     // B-D: S2
-    // E-G: S3
+    // E-F/G: S3 (DFMEA: 2列, PFMEA: 3列)
     // H-K: S4
-    // L-P: S5
-    // Q-AB: S6
-    ws.columns = [
+    // L-Q/P: S5 (DFMEA: 6列, PFMEA: 5列)
+    // R-AC/AB: S6
+    const dfmeaColumns = [
       { width: 15 }, // A (History)
-      { width: 25 }, { width: 25 }, { width: 25 }, // B-D
-      { width: 30 }, { width: 30 }, { width: 30 }, // E-G
-      { width: 35 }, { width: 4 }, { width: 35 }, { width: 35 }, // H-K
-      { width: 30 }, { width: 4 }, { width: 30 }, { width: 4 }, { width: 5 }, // L-P
-      { width: 25 }, { width: 25 }, { width: 15 }, { width: 12 }, { width: 10 }, { width: 30 }, { width: 12 }, { width: 4 }, { width: 4 }, { width: 4 }, { width: 4 }, { width: 20 }, // Q-AB
+      { width: 25 }, { width: 25 }, { width: 25 }, // B-D (S2)
+      { width: 30 }, { width: 30 }, // E-F (S3) - DFMEA 只有 2 列
+      { width: 35 }, { width: 4 }, { width: 35 }, { width: 35 }, // H-K (S4)
+      { width: 30 }, { width: 30 }, { width: 4 }, { width: 30 }, { width: 4 }, { width: 5 }, // L-Q (S5) - DFMEA 6 列
+      { width: 25 }, { width: 25 }, { width: 15 }, { width: 12 }, { width: 10 }, { width: 30 }, { width: 12 }, { width: 4 }, { width: 4 }, { width: 4 }, { width: 4 }, { width: 20 }, // R-AC (S6)
       ...customColumns.map(() => ({ width: 15 }))
     ];
 
-    const totalCols = 28 + customColumns.length;
+    const pfmeaColumns = [
+      { width: 15 }, // A (History)
+      { width: 25 }, { width: 25 }, { width: 25 }, // B-D (S2)
+      { width: 30 }, { width: 30 }, { width: 30 }, // E-G (S3)
+      { width: 35 }, { width: 4 }, { width: 35 }, { width: 35 }, // H-K (S4)
+      { width: 30 }, { width: 4 }, { width: 30 }, { width: 4 }, { width: 5 }, // L-P (S5)
+      { width: 25 }, { width: 25 }, { width: 15 }, { width: 12 }, { width: 10 }, { width: 30 }, { width: 12 }, { width: 4 }, { width: 4 }, { width: 4 }, { width: 4 }, { width: 20 }, // Q-AB (S6)
+      ...customColumns.map(() => ({ width: 15 }))
+    ];
+
+    ws.columns = isDfmea ? dfmeaColumns : pfmeaColumns;
+    const totalCols = isDfmea ? 29 : 28 + customColumns.length; // DFMEA 多一列（S）
 
     // --- 3. ROW 1: TITLE (Black BG) ---
     ws.mergeCells(1, 1, 1, totalCols);
@@ -280,11 +302,17 @@ export const FmeaTable: React.FC<FmeaTableProps> = ({ data }) => {
 
     // --- 7. ROW 7: STEP HEADERS ---
     const r7 = 7;
-    const steps = [
+    const steps = isDfmea ? [
         { title: headers.step2.title, start: 2, end: 4, color: cPink },
-        { title: headers.step3.title, start: 5, end: 7, color: cPink },
+        { title: headers.step3.title, start: 5, end: 6, color: cPink }, // DFMEA Step 3: 2列
+        { title: headers.step4.title, start: 7, end: 10, color: cPink },
+        { title: headers.step5.title, start: 11, end: 16, color: cGreen }, // DFMEA Step 5: 6列 (PC, DC, O, D, S, AP)
+        { title: headers.step6.title, start: 17, end: 28, color: cWhite },
+    ] : [
+        { title: headers.step2.title, start: 2, end: 4, color: cPink },
+        { title: headers.step3.title, start: 5, end: 7, color: cPink }, // PFMEA Step 3: 3列
         { title: headers.step4.title, start: 8, end: 11, color: cPink },
-        { title: headers.step5.title, start: 12, end: 16, color: cGreen },
+        { title: headers.step5.title, start: 12, end: 16, color: cGreen }, // PFMEA Step 5: 5列
         { title: headers.step6.title, start: 17, end: 28, color: cWhite },
     ];
 
@@ -347,16 +375,33 @@ export const FmeaTable: React.FC<FmeaTableProps> = ({ data }) => {
     // --- 9. DATA ---
     data.rows.forEach((row, idx) => {
         const r = 9 + idx;
-        const rowData = [
-            idx + 1,
-            row.s2_item, row.s2_step, row.s2_element,
-            row.s3_func_item, row.s3_func_step, row.s3_func_element,
-            row.s4_effect, row.s4_severity, row.s4_mode, row.s4_cause,
-            row.s5_prev_control, row.s5_occurrence, row.s5_det_control, row.s5_detection, row.s5_ap,
-            row.s6_prev_action, row.s6_det_action, row.s6_resp_person, row.s6_target_date, row.s6_status, row.s6_action_taken, row.s6_completion_date,
-            row.s6_severity_new, row.s6_occurrence_new, row.s6_detection_new, row.s6_ap_new, row.remarks,
-            ...customColumns.map(col => row[col] || '')
-        ];
+        let rowData;
+
+        if (isDfmea) {
+            // DFMEA: Step 3 只有 2 列，Step 5 有 6 列（PC, DC, O, D, S, AP）
+            rowData = [
+                idx + 1,
+                row.s2_item, row.s2_step, row.s2_element,
+                row.s3_func_item, row.s3_func_step, // 只有 2 列
+                row.s4_effect, row.s4_severity, row.s4_mode, row.s4_cause,
+                row.s5_prev_control, row.s5_det_control, row.s5_occurrence, row.s5_detection, row.s4_severity, row.s5_ap,
+                row.s6_prev_action, row.s6_det_action, row.s6_resp_person, row.s6_target_date, row.s6_status, row.s6_action_taken, row.s6_completion_date,
+                row.s6_severity_new, row.s6_occurrence_new, row.s6_detection_new, row.s6_ap_new, row.remarks,
+                ...customColumns.map(col => row[col] || '')
+            ];
+        } else {
+            // PFMEA: Step 3 有 3 列，Step 5 有 5 列
+            rowData = [
+                idx + 1,
+                row.s2_item, row.s2_step, row.s2_element,
+                row.s3_func_item, row.s3_func_step, row.s3_func_element,
+                row.s4_effect, row.s4_severity, row.s4_mode, row.s4_cause,
+                row.s5_prev_control, row.s5_occurrence, row.s5_det_control, row.s5_detection, row.s5_ap,
+                row.s6_prev_action, row.s6_det_action, row.s6_resp_person, row.s6_target_date, row.s6_status, row.s6_action_taken, row.s6_completion_date,
+                row.s6_severity_new, row.s6_occurrence_new, row.s6_detection_new, row.s6_ap_new, row.remarks,
+                ...customColumns.map(col => row[col] || '')
+            ];
+        }
         const currentRow = ws.getRow(r);
         currentRow.values = rowData;
         currentRow.font = sFontNormal;
@@ -636,9 +681,9 @@ export const FmeaTable: React.FC<FmeaTableProps> = ({ data }) => {
               <th rowSpan={2} className="bg-yellow-50 border-r border-slate-300 p-1 whitespace-pre-wrap text-[9px]">{headers.step1.issue}</th>
               
               <th colSpan={3} className="bg-fuchsia-200 border-r border-fuchsia-300 py-1 px-1">{headers.step2.title}</th>
-              <th colSpan={3} className="bg-fuchsia-200 border-r border-fuchsia-300 py-1 px-1">{headers.step3.title}</th>
+              <th colSpan={isDfmea ? 2 : 3} className="bg-fuchsia-200 border-r border-fuchsia-300 py-1 px-1">{headers.step3.title}</th>
               <th colSpan={4} className="bg-fuchsia-200 border-r border-fuchsia-300 py-1 px-1">{headers.step4.title}</th>
-              <th colSpan={5} className="bg-lime-300 border-r border-lime-400 py-1 px-1">{headers.step5.title}</th>
+              <th colSpan={isDfmea ? 6 : 5} className="bg-lime-300 border-r border-lime-400 py-1 px-1">{headers.step5.title}</th>
               <th colSpan={12} className="bg-white border-b border-r border-slate-300 py-1 px-1">{headers.step6.title}</th>
                {customColumns.length > 0 && (
                 <th colSpan={customColumns.length} className="bg-purple-100 py-1 px-1">Extended</th>
@@ -654,7 +699,7 @@ export const FmeaTable: React.FC<FmeaTableProps> = ({ data }) => {
               {/* S3 */}
               <th className="p-1 border-r border-fuchsia-100 bg-fuchsia-50 whitespace-pre-wrap">{headers.step3.col1}</th>
               <th className="p-1 border-r border-fuchsia-100 bg-fuchsia-50 whitespace-pre-wrap">{headers.step3.col2}</th>
-              <th className="p-1 border-r border-fuchsia-200 bg-fuchsia-50 whitespace-pre-wrap">{headers.step3.col3}</th>
+              {!isDfmea && <th className="p-1 border-r border-fuchsia-200 bg-fuchsia-50 whitespace-pre-wrap">{headers.step3.col3}</th>}
               {/* S4 */}
               <th className="p-1 border-r border-fuchsia-100 bg-fuchsia-50 whitespace-pre-wrap">{headers.step4.col1}</th>
               <th className="p-1 border-r border-fuchsia-100 text-black font-bold bg-lime-300">{headers.step4.col2}</th>
@@ -662,10 +707,12 @@ export const FmeaTable: React.FC<FmeaTableProps> = ({ data }) => {
               <th className="p-1 border-r border-fuchsia-200 bg-fuchsia-50 whitespace-pre-wrap">{headers.step4.col4}</th>
               {/* S5 */}
               <th className="p-1 border-r border-lime-200 bg-lime-100 whitespace-pre-wrap">{headers.step5.col1}</th>
-              <th className="p-1 border-r border-lime-200 text-black font-bold bg-lime-300">{headers.step5.col2}</th>
-              <th className="p-1 border-r border-lime-200 bg-lime-100 whitespace-pre-wrap">{headers.step5.col3}</th>
-              <th className="p-1 border-r border-lime-200 text-black font-bold bg-lime-300">{headers.step5.col4}</th>
-              <th className="p-1 border-r border-lime-300 font-bold bg-yellow-300">{headers.step5.col5}</th>
+              <th className="p-1 border-r border-lime-200 bg-lime-100 whitespace-pre-wrap">{headers.step5.col2}</th>
+              <th className="p-1 border-r border-lime-200 text-black font-bold bg-lime-300">{headers.step5.col3}</th>
+              <th className="p-1 border-r border-lime-200 bg-lime-100 whitespace-pre-wrap">{headers.step5.col4}</th>
+              <th className="p-1 border-r border-lime-200 text-black font-bold bg-lime-300">{headers.step5.col5}</th>
+              {isDfmea && <th className="p-1 border-r border-lime-300 font-bold bg-yellow-300">{headers.step5.col6}</th>}
+              <th className="p-1 border-r border-lime-300 font-bold bg-yellow-300">{isDfmea ? headers.step5.col7 : headers.step5.col5}</th>
               {/* S6 */}
               <th className="p-1 border-r border-slate-200 bg-white whitespace-pre-wrap">{headers.step6.col1}</th>
               <th className="p-1 border-r border-slate-200 bg-white whitespace-pre-wrap">{headers.step6.col2}</th>
@@ -698,7 +745,7 @@ export const FmeaTable: React.FC<FmeaTableProps> = ({ data }) => {
 
                 <td className="p-1 border-r border-slate-100 align-top text-slate-600 bg-blue-50/10 whitespace-pre-wrap break-words">{row.s3_func_item}</td>
                 <td className="p-1 border-r border-slate-100 align-top text-slate-600 bg-blue-50/10 whitespace-pre-wrap break-words">{row.s3_func_step}</td>
-                <td className="p-1 border-r border-slate-300 align-top text-slate-600 bg-blue-50/10 whitespace-pre-wrap break-words">{row.s3_func_element}</td>
+                {!isDfmea && <td className="p-1 border-r border-slate-300 align-top text-slate-600 bg-blue-50/10 whitespace-pre-wrap break-words">{row.s3_func_element}</td>}
 
                 <td className="p-1 border-r border-slate-100 align-top text-slate-700 bg-fuchsia-50/10 whitespace-pre-wrap break-words">{row.s4_effect}</td>
                 <td className="p-1 border-r border-slate-100 align-top text-center font-bold text-red-700 bg-fuchsia-50/20">{row.s4_severity}</td>
@@ -706,9 +753,10 @@ export const FmeaTable: React.FC<FmeaTableProps> = ({ data }) => {
                 <td className="p-1 border-r border-slate-300 align-top text-slate-700 bg-fuchsia-50/10 whitespace-pre-wrap break-words">{row.s4_cause}</td>
 
                 <td className="p-1 border-r border-slate-100 align-top text-[10px] text-slate-600 bg-amber-50/10 whitespace-pre-wrap break-words">{row.s5_prev_control}</td>
-                <td className="p-1 border-r border-slate-100 align-top text-center font-bold text-orange-700 bg-amber-50/20">{row.s5_occurrence}</td>
                 <td className="p-1 border-r border-slate-100 align-top text-[10px] text-slate-600 bg-amber-50/10 whitespace-pre-wrap break-words">{row.s5_det_control}</td>
+                <td className="p-1 border-r border-slate-100 align-top text-center font-bold text-orange-700 bg-amber-50/20">{row.s5_occurrence}</td>
                 <td className="p-1 border-r border-slate-100 align-top text-center font-bold text-blue-700 bg-amber-50/20">{row.s5_detection}</td>
+                {isDfmea && <td className="p-1 border-r border-slate-100 align-top text-center font-bold text-red-700 bg-amber-50/20">{row.s4_severity}</td>}
                 <td className="p-1 border-r border-slate-300 align-top text-center bg-amber-50/10">
                   <ApBadge value={row.s5_ap} />
                 </td>

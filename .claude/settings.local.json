@@ -21,7 +21,8 @@
       "Bash(wrangler whoami:*)",
       "Bash(timeout:*)",
       "Bash(wrangler deployments tail:*)",
-      "Bash(npx wrangler pages deploy:*)"
+      "Bash(npx wrangler pages deploy:*)",
+      "mcp__zai-mcp-server__ui_to_artifact"
     ]
   }
 }
